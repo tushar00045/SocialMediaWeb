@@ -1,16 +1,104 @@
-# React + Vite
+# MegaBlog 🚀
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A full-stack social blogging platform where users can create posts, view posts from other users, manage their profiles, comment on posts, upload images, and interact with content.
 
-Currently, two official plugins are available:
+The project is inspired by modern social-media platforms and focuses on building a clean, responsive interface with a real backend using Appwrite.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## ✨ Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 👤 Authentication
 
-## Expanding the Oxlint configuration
+- User registration and login
+- User session management
+- Logout functionality
+- Display currently logged-in user
+- Protected user actions
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+### 📝 Posts
+
+- Create new posts
+- Edit existing posts
+- Delete posts
+- View individual posts
+- View all posts
+- Display:
+  - Username
+  - User ID
+  - Post content
+  - Featured image
+  - Post status
+- Navigate to the author's profile directly from a post
+
+### 👤 User Profiles
+
+- View user profiles
+- View profile by user ID
+- Profile picture
+- Cover image
+- Bio
+- Address
+- User's posts
+- Edit profile
+- Navigate between different users' profiles
+
+### 💬 Comments
+
+- Add comments to posts
+- Display comments under posts
+- Comment text support
+- Comment image support
+- Display comment author's profile
+- Navigate from a comment to the author's profile
+- Display comment actions such as:
+  - Reply
+  - Repost
+  - Like
+  - Views
+  - Bookmark
+  - Share
+
+### 🖼️ Image Upload
+
+Images are stored using Appwrite Storage.
+
+Used for:
+
+- Profile images
+- Cover images
+- Post featured images
+- Comment images
+
+### 🔄 Redux State Management
+
+Redux Toolkit is used to manage application state.
+
+Current slices include:
+
+- Authentication
+- Posts
+- Profiles
+- Comments
+
+Example state structure:
+
+```text
+Redux Store
+│
+├── auth
+│
+├── post
+│   ├── posts
+│   ├── currentPost
+│   └── loading
+│
+├── profile
+│   ├── profiles
+│   ├── currentProfile
+│   └── loading
+│
+└── comment
+    ├── comments
+    ├── currentComment
+    └── loading
