@@ -6,7 +6,8 @@ import EditProfile from './EditProfile';
 import profileAppwrite from '../appwrite/profileConfig';
 import defaultCoverImage from '../assets/jplenio-nature-3082832_1920.jpg';
 import defaultProfileImage from '../assets/wolf69w-nature-10184389.jpg';
-import { setCurrentProfile,addProfile } from '../store/profileSlice';
+import { setCurrentProfile, addProfile } from '../store/profileSlice';
+import followAppwrite from '../appwrite/followConfig';
 
 function Profile() {
     const userData = useSelector((state) => state.auth.userData);
@@ -14,8 +15,17 @@ function Profile() {
     const [posts, setPosts] = useState([]);
     const navigate = useNavigate();
     const { userId } = useParams();
+    const [isFollowing, setIsFollowing] = useState(false);
+    const [follower, setFollower] = useState(0);
+    const [following, setFollowing] = useState(0);
+    const [followLoading, setFollowLoading] = useState(true);
 
     const dispatch = useDispatch();
+
+    const followerId = userData?.$id;
+    const followingId = userId;
+
+    console.log(followerId, followingId);
 
 
     console.log(userId);
@@ -53,12 +63,132 @@ function Profile() {
             });
     }, [userId]);
 
+    useEffect(() => {
+        if (!followerId || !followingId) {
+            return;
+        }
+
+        if (followerId === followingId) {
+            setFollowLoading(false);
+            return;
+        }
+
+        const checkFollow = async () => {
+            setFollowLoading(true)
+            const result = await followAppwrite.checkFollowing({ followerId, followingId });
+
+            if (!result) {
+                return;
+            }
+            console.log(result);
+            
+            setIsFollowing(result.documents.length > 0);
+            setFollowLoading(false);
+        };
+
+        checkFollow();
+    }, [followerId, followingId]);
+
+    const handleFollow = async () => {
+        if (!followerId || !followingId) {
+            return;
+        }
+
+        if (followerId === followingId) {
+            return;
+        }
+
+        setFollowLoading(true);
+
+        try {
+            // Check database one more time
+            const existing = await followAppwrite.checkFollowing({
+                followerId,
+                followingId
+            });
+
+            if (existing?.documents?.length > 0) {
+                setIsFollowing(true);
+                return;
+            }
+
+            // Create follow
+            const result = await followAppwrite.followUser({
+                followerId,
+                followingId
+            });
+
+            if (result) {
+                setIsFollowing(true);
+
+                // Refresh follower count
+                handlegetFollower();
+            }
+
+        } finally {
+            setFollowLoading(false);
+        }
+    }
+
+    const handleUnfollow = async () => {
+        if (!followerId || !followingId) {
+            return;
+        }
+
+        setFollowLoading(true);
+
+        try {
+            const result = await followAppwrite.UnFolloweUser({
+                followerId,
+                followingId
+            });
+            if (result) {
+                setIsFollowing(false);
+                handlegetFollower();
+            }
+        } finally {
+            setFollowLoading(false);
+        }
+    };
+
+    const handlegetFollower = async () => {
+        const result = await followAppwrite.getFollower(followingId);
+        if (!result) {
+            return;
+        }
+
+        console.log(result);
+        setFollower(result.documents.length);
+    }
+
+    const handlegetFollowing = async() =>{
+        const result = await followAppwrite.getFollowing(followingId);
+        
+        if (!result) {
+            return;
+        }
+        console.log(result);
+
+        setFollowing(result.documents.length);
+    }
+
+    useEffect(() => {
+        if (!followingId) return;
+
+        handlegetFollower();
+        handlegetFollowing();
+    }, [followingId]);
+
+
+
     const profile = useSelector((state) => state.profile.currentProfile);
 
     const userName = posts[0]?.userName || userData?.name || 'User';
     const loggedInUserName = userData?.name;
     const profileImageUrl = profile?.profileImage ? profileAppwrite.getFileView(profile.profileImage) : defaultProfileImage;
     const coverImageUrl = profile?.coverImage ? profileAppwrite.getFileView(profile.coverImage) : defaultCoverImage;
+
+
 
     if (!profile) {
         return (
@@ -108,10 +238,53 @@ function Profile() {
                 </button>
 
                 <button
-                    onClick={() => setShowEditProfile(true)}
-                    className="px-6 py-2 rounded-full bg-white text-black font-bold hover:bg-gray-200"
+                    disabled={followLoading}
+                    onClick={() => {
+                        if (userData?.$id === userId) {
+                            setShowEditProfile(true);
+                        } else if (isFollowing) {
+                            handleUnfollow();
+                        } else {
+                            handleFollow();
+                        }
+                    }}
+                    className={`
+                        group
+                        px-6 py-2
+                        rounded-full
+                        font-bold
+                        transition-all duration-200
+                        disabled:opacity-50
+                        disabled:cursor-not-allowed
+
+                        ${
+                            userData?.$id === userId
+                                ? "bg-white text-black hover:bg-gray-200"
+                                : isFollowing
+                                    ? "border border-gray-500 text-white bg-transparent hover:border-red-500 hover:text-red-500"
+                                    : "bg-white text-black hover:bg-gray-200"
+                        }
+                    `}
                 >
-                    {userName === loggedInUserName ? 'Edit Profile' : 'Follow'}
+                    {userData?.$id === userId ? (
+                        "Edit Profile"
+                    ) : followLoading ? (
+                        "Loading..."
+                    ) : isFollowing ? (
+                        <>
+                            {/* Normal */}
+                            <span className="group-hover:hidden">
+                                Following
+                            </span>
+
+                            {/* Hover */}
+                            <span className="hidden group-hover:inline">
+                                Unfollow
+                            </span>
+                        </>
+                    ) : (
+                        "Follow"
+                    )}
                 </button>
             </div>
 
@@ -129,11 +302,11 @@ function Profile() {
 
                 <div className="flex gap-5 mt-4">
                     <div>
-                        <span className="font-bold text-white">0</span>{' '}
+                        <span className="font-bold text-white">{ following}</span>{' '}
                         <span className="text-gray-500">Following</span>
                     </div>
                     <div>
-                        <span className="font-bold text-white">0</span>{' '}
+                        <span className="font-bold text-white">{ follower}</span>{' '}
                         <span className="text-gray-500">Followers</span>
                     </div>
                 </div>

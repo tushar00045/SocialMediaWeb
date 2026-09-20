@@ -1,6 +1,25 @@
 import conf from "../conf/config";
 
-import { Client, ID, Databases, Storage, Query, Permission, Role } from "appwrite";
+import { Client, ID, Databases, Storage, Query } from "appwrite";
+
+async function generateFollowId(followerId, followingId) {
+  const value = `${followerId}_${followingId}`;
+
+  const encoder = new TextEncoder();
+  const data = encoder.encode(value);
+
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+
+  const hash = hashArray
+    .map(byte => byte.toString(16).padStart(2, "0"))
+    .join("");
+
+  // SHA-256 = 64 characters
+  // Appwrite allows max 36
+  return hash.substring(0, 36);
+}
 
 export class AppwriteFollow{
   client = new Client()
@@ -10,17 +29,18 @@ export class AppwriteFollow{
   constructor() {
     this.client
       .setEndpoint(conf.appwriteUrl)
-      .setEndpoint(conf.appwriteProjectId);
+      .setProject(conf.appwriteProjectId);
     this.databases = new Databases(this.client);
     this.bucket = new Storage(this.client);
   }
 
   async followUser({followerId, followingId}) {
     try {
+      const documentId = await generateFollowId(followerId,followingId);
       return await this.databases.createDocument({
         databaseId: conf.appwriteDatabaseId,
         collectionId: conf.appwriteCollectionId4,
-        documentId: ID.unique(),
+        documentId,
         
         data: {
           followerId,
@@ -39,7 +59,7 @@ export class AppwriteFollow{
         conf.appwriteCollectionId4,
 
         [
-          Query.equal("following Id", userId)
+          Query.equal("followingId", userId)
         ]
       )
     } catch (error) {
@@ -67,7 +87,7 @@ export class AppwriteFollow{
         conf.appwriteDatabaseId,
         conf.appwriteCollectionId4,
         [
-          Query.equal("following Id", followerId),
+          Query.equal("followingId", followerId),
           Query.equal("followerId", followingId)
         ]
       )
@@ -76,7 +96,8 @@ export class AppwriteFollow{
     }
   }
 
-  async UnFolloweUser(documentId) {
+  async UnFolloweUser({ followerId, followingId }) {
+    const documentId=await generateFollowId(followerId,followingId)
     try {
       return await this.databases.deleteDocument(
         conf.appwriteDatabaseId,
