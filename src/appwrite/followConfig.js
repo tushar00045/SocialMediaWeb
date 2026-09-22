@@ -87,8 +87,8 @@ export class AppwriteFollow{
         conf.appwriteDatabaseId,
         conf.appwriteCollectionId4,
         [
-          Query.equal("followingId", followerId),
-          Query.equal("followerId", followingId)
+          Query.equal("followingId", followingId),
+          Query.equal("followerId", followerId)
         ]
       )
     } catch (error) {

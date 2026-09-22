@@ -52,7 +52,6 @@ function Profile() {
 
     useEffect(() => {
         if (!userId) return;
-
         appwriteService.getPosts([])
             .then((res) => {
                 const authorPosts = res?.documents?.filter((post) => post.userid === userId) ?? [];
@@ -99,7 +98,6 @@ function Profile() {
         }
 
         setFollowLoading(true);
-
         try {
             // Check database one more time
             const existing = await followAppwrite.checkFollowing({
