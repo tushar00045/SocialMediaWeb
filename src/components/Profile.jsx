@@ -156,6 +156,7 @@ function Profile() {
         }
 
         console.log(result);
+        
         setFollower(result.documents.length);
     }
 
