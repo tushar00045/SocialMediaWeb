@@ -24,7 +24,8 @@ function Signup() {
                         bio: "",
                         address: "",
                         profileImage: "",
-                        coverImage: ""
+                        coverImage: "",
+                        profileName:user?.name
                     });
                 if(user) dispatch(login(user));
                 navigate("/")

@@ -29,7 +29,8 @@ export class ProfileAppwrite {
     bio = "",
     address = "",
     profileImage = "",
-    coverImage = ""
+    coverImage = "",
+    profileName="",
   }) {
 
     try {
@@ -43,7 +44,8 @@ export class ProfileAppwrite {
           bio,
           address,
           profileImage,
-          coverImage
+          coverImage,
+          profileName,
         }
       );
 

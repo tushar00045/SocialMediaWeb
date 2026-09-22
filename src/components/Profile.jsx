@@ -180,7 +180,7 @@ function Profile() {
 
     const profile = useSelector((state) => state.profile.currentProfile);
 
-    const userName = posts[0]?.userName || userData?.name || 'User';
+    const userName = profile?.profileName;
     const loggedInUserName = userData?.name;
     const profileImageUrl = profile?.profileImage ? profileAppwrite.getFileView(profile.profileImage) : defaultProfileImage;
     const coverImageUrl = profile?.coverImage ? profileAppwrite.getFileView(profile.coverImage) : defaultCoverImage;
@@ -298,14 +298,23 @@ function Profile() {
                 <p className="mt-2 text-gray-500">Joined August 2026</p>
 
                 <div className="flex gap-5 mt-4">
-                    <div>
-                        <span className="font-bold text-white">{ following}</span>{' '}
-                        <span className="text-gray-500">Following</span>
-                    </div>
-                    <div>
-                        <span className="font-bold text-white">{ follower}</span>{' '}
-                        <span className="text-gray-500">Followers</span>
-                    </div>
+                  <button
+                       onClick={() => 
+                         navigate(`/profile/${userId}/following`)    
+                       }
+                    >          
+                    <span className="font-bold text-white">{ following}</span>{' '}
+                    <span className="text-gray-500">Following</span>
+                    </button>
+
+                    <button
+                        onClick={() =>
+                            navigate(`/profile/${userId}/followers`)
+                        }
+                    >
+                    <span className="font-bold text-white">{ follower}</span>{' '}
+                    <span className="text-gray-500">Followers</span>
+                    </button>
                 </div>
             </div>
 

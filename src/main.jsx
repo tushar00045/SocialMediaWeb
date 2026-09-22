@@ -21,6 +21,7 @@ import EditPost from "./pages/EditPost";
 import Post from "./pages/Post";
 import AllPost from "./pages/AllPost.jsx"
 import FullProfile from "./pages/FullProfile";
+import Follow from "./pages/Follow.jsx";
 
 const router = createBrowserRouter([
   {
@@ -80,6 +81,14 @@ const router = createBrowserRouter([
       {
         path: "/post/:slug",
         element: <Post />,
+      },
+      {
+        path: "/profile/:userId/following",
+        element: <Follow/>
+      },
+      {
+        path: "/profile/:userId/followers",
+        element:<Follow/>
       },
     ],
   },
