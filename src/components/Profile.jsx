@@ -171,12 +171,11 @@ function Profile() {
     }
 
     useEffect(() => {
-        if (!followingId) return;
+        if (!userData?.$id || !userId) return;
 
         handlegetFollower();
         handlegetFollowing();
-    }, [followingId]);
-
+    }, [userData?.$id, userId]);
 
 
     const profile = useSelector((state) => state.profile.currentProfile);

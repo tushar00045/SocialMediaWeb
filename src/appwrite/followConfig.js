@@ -54,14 +54,15 @@ export class AppwriteFollow{
 
   async getFollower(userId) {
     try {
-      return await this.databases.listDocuments(
-        conf.appwriteDatabaseId,
-        conf.appwriteCollectionId4,
-
-        [
+      const result = await this.databases.listDocuments({
+        databaseId: conf.appwriteDatabaseId,
+        collectionId: conf.appwriteCollectionId4,
+        queries:[
           Query.equal("followingId", userId)
         ]
-      )
+    })
+
+      return result;
     } catch (error) {
       console.log("Unable to get Follower", userId);
     }
@@ -69,28 +70,38 @@ export class AppwriteFollow{
 
   async getFollowing(userId) {
     try {
-      return await this.databases.listDocuments(
-        conf.appwriteDatabaseId,
-        conf.appwriteCollectionId4
-        [
-        Query.equal("followerId", userId)
+      console.log("DATABASE:", conf.appwriteDatabaseId);
+      console.log("COLLECTION:", conf.appwriteCollectionId4);
+      console.log("USER:", userId);
+
+      const result = await this.databases.listDocuments({
+        databaseId: conf.appwriteDatabaseId,
+        collectionId: conf.appwriteCollectionId4,
+        queries: [
+          Query.equal("followerId", userId)
         ]
-      )
+      });
+
+      console.log("FOLLOWING DOCUMENTS:", result.documents);
+
+      return result;
+
     } catch (error) {
-      console.log("Unable to get following", userId);
+      console.error("Unable to get following:", error);
+      return null;
     }
   }
 
   async checkFollowing({ followerId, followingId }) {
     try {
-      return await this.databases.listDocuments(
-        conf.appwriteDatabaseId,
-        conf.appwriteCollectionId4,
-        [
+      return await this.databases.listDocuments({
+        databaseId:conf.appwriteDatabaseId,
+        collectionId:conf.appwriteCollectionId4,
+        queries:[
           Query.equal("followingId", followingId),
           Query.equal("followerId", followerId)
         ]
-      )
+      })
     } catch (error) {
       console.log("Unable to check following.", error);
     }
@@ -99,11 +110,11 @@ export class AppwriteFollow{
   async UnFolloweUser({ followerId, followingId }) {
     const documentId=await generateFollowId(followerId,followingId)
     try {
-      return await this.databases.deleteDocument(
-        conf.appwriteDatabaseId,
-        conf.appwriteCollectionId4,
-        documentId
-      )
+      return await this.databases.deleteDocument({
+        databaseId:conf.appwriteDatabaseId,
+        collectionId:conf.appwriteCollectionId4,
+        documentId:documentId
+      })
     } catch (error) {
       console.log("Unable to unfollow user", error);
     }
