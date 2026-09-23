@@ -1,20 +1,24 @@
-import React, { useState } from 'react'
+import React, { useState,useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
 import profileAppwrite from '../appwrite/profileConfig';
 import AppwriteService from "../appwrite/config";
 import { useSelector } from 'react-redux';
-
+import followAppwrite from '../appwrite/followConfig';
+import defaultProfileImage from "../assets/wolf69w-nature-10184389.jpg"
 
 function Follow() {
   const {userId,type} = useParams();
   console.log(userId);
 
   const [followers, setFollowers] = useState([]);
-  const [following, setFollowing] = useState([]);
+    const [following, setFollowing] = useState([]);
+    const [myfollowingIds, setMyfollowingIds] = useState([]);
 
   const followingId = userId;
   
-  const profiles = useSelector((state) => state.profile.profiles);
+    const profiles = useSelector((state) => state.profile.profiles);
+    
+    const userData = useSelector((state) => state.auth.userData);
 
   const currentProfile = profiles.find((profile) => profile?.$id === userId);
 
@@ -29,8 +33,11 @@ function Follow() {
         }
 
       console.log(result);
-      console.log(result.documents);
-      setFollowers(result.documents);
+        console.log(result.documents);
+        
+        const followerIds = result.documents.map((document) => document.followerId);
+        console.log(followerIds);
+        setFollowers(followerIds);
     }
 
     const handlegetFollowing = async() =>{
@@ -40,9 +47,80 @@ function Follow() {
             return;
         }
         console.log(result);
-      console.log(result.documents);
-      setFollowing(result.documents);
-   }
+        console.log(result.documents);
+        
+        const followingIds = result.documents.map((document) => document.followingId);
+        console.log(followingIds);
+        setFollowing(followingIds);
+    }
+
+    const handleGetMyFollowing = async () => {
+        if (!userData?.$id) {
+            return; 
+        }
+
+        const result = await followAppwrite.getFollowing(userData?.$id);
+
+        if (!result) {
+            return;
+        }
+
+        const ids = result.documents.map((document) =>
+            document.followingId
+        )
+
+        setMyfollowingIds(ids);
+    }
+
+    const IsFollowing = (profileId)=>{
+        return myfollowingIds.includes(profileId);
+    }
+
+    const handleFollow = async (profileId) => {
+        if (!userData?.$id || !profileId) return;
+
+        if (userData?.$id === profileId) {
+            return;
+        }
+
+        const alreadyFollowing = myfollowingIds.includes(profileId);
+
+        if (alreadyFollowing) {
+            const result = await followAppwrite.UnFolloweUser({
+                followerId: userData.$id,
+                followingId: profileId
+            });
+
+            if (result) {
+                setMyfollowingIds((prev) =>
+                    prev.filter((id) => id !== profileId)
+                );
+            }
+        } else {
+            const result = await followAppwrite.followUser({
+                followerId: userData.$id,
+                followingId: profileId
+            });
+
+            if (result) {
+                setMyfollowingIds((prev) => [
+                    ...prev,
+                    profileId
+                ]);
+            }
+        };
+    }
+
+    const followersProfile = profiles.filter((profile) =>
+        followers.includes(profile?.$id)
+    );
+    console.log({followersProfile});
+
+    const followingProfile = profiles.filter((profile) =>
+        following.includes(profile?.$id)
+    );
+    console.log({followingProfile});
+
     useEffect(() => {
         if (!userId) return;
 
@@ -52,6 +130,11 @@ function Follow() {
             handlegetFollowing();
         }
     }, [userId, type]);
+
+    useEffect(() => {
+       handleGetMyFollowing();
+    }, [userData?.$id]);
+
 
   const navigate = useNavigate();
     return (
@@ -91,7 +174,7 @@ function Follow() {
                     </button>
 
             <button
-              onClick={()=>navigate(`/profile/${userId}/following}`)}
+              onClick={()=>navigate(`/profile/${userId}/following`)}
                         className={`flex-1 py-4 font-bold transition ${
                             type === "following"
                                 ? "text-white border-b-4 border-blue-500"
@@ -106,31 +189,103 @@ function Follow() {
         
             <div className="w-full">
           
-          {/* {
-            type === "followers" ? ${`
-                              <div className="flex items-center gap-4 px-6 py-4 border-b border-gray-900 hover:bg-gray-950 transition">
-                    <img
-                        src="https://via.placeholder.com/100"
-                        alt="Profile"
-                        className="w-12 h-12 rounded-full object-cover shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                        <h2 className="font-bold text-[16px] truncate">
-                            ${}
-                        </h2>
-                        <p className="text-gray-500 text-[15px]">
-                            ${}
-                        </p>
-                    </div>
-                    <button className="shrink-0 px-5 py-2 rounded-full font-bold bg-white text-black hover:bg-gray-200 transition">
-                        Follow
-                    </button>
-                </div>
-            `}
-          :${}
-            
-          }, */}
+            {type === "followers"
+                    ? followersProfile.length > 0?followersProfile.map((profile) =>(
+                  
+                    <div
+                        key={profile?.$id}
+                        className="flex items-center gap-4 px-6 py-4 border-b border-gray-900 hover:bg-gray-950 transition"
+                    >
+                        <img
+                            src={profile?.profileImage ? profileAppwrite.getFileView(profile.profileImage) : defaultProfileImage}
+                            alt="Profile"
+                            className="w-12 h-12 rounded-full object-cover shrink-0"
+                        />
 
+                        <div className="flex-1 min-w-0">
+                            <h2 className="font-bold text-[16px] truncate">
+                                {profile?.profileName}
+                            </h2>
+
+                            <p className="text-gray-500 text-[15px]">
+                                {profile?.bio}
+                            </p>
+                        </div>
+
+                        {profile?.$id!== userData?.$id &&(<button
+                            onClick={() => handleFollow(profile?.$id)}
+                            className={`group shrink-0 px-5 py-2 rounded-full font-bold transition-all duration-200 ${
+                                IsFollowing(profile?.$id)
+                                    ? "border border-gray-500 text-white bg-transparent hover:border-red-500 hover:text-red-500"
+                                    : "bg-white text-black hover:bg-gray-200"
+                            }`}
+                        >
+                            {IsFollowing(profile?.$id) ? (
+                                <>
+                                    <span className="group-hover:hidden">
+                                        Following
+                                    </span>
+
+                                    <span className="hidden group-hover:inline">
+                                        Unfollow
+                                    </span>
+                                </>
+                            ) : (
+                                "Follow"
+                            )}
+                        </button>)}
+                    </div>
+                )) : (<div>
+                        <h2>You Don`t have Any Followers yet.</h2>
+                    </div>)
+                : followingProfile.length>0?followingProfile.filter((profile)=> profile.$id!==userData.$id).map((profile) => (
+                    <div
+                        key={profile?.$id}
+                        className="flex items-center gap-4 px-6 py-4 border-b border-gray-900 hover:bg-gray-950 transition"
+                    >
+                        <img
+                            src={profile?.profileImage ? profileAppwrite.getFileView(profile.profileImage) : defaultProfileImage}
+                            alt="Profile"
+                            className="w-12 h-12 rounded-full object-cover shrink-0"
+                        />
+
+                        <div className="flex-1 min-w-0">
+                            <h2 className="font-bold text-[16px] truncate">
+                                {profile?.profileName}
+                            </h2>
+
+                            <p className="text-gray-500 text-[15px]">
+                                {profile?.bio}
+                            </p>
+                        </div>
+
+                        <button
+                            onClick={() => handleFollow(profile?.$id)}
+                            className={`group shrink-0 px-5 py-2 rounded-full font-bold transition-all duration-200 ${
+                                IsFollowing(profile?.$id)
+                                    ? "border border-gray-500 text-white bg-transparent hover:border-red-500 hover:text-red-500"
+                                    : "bg-white text-black hover:bg-gray-200"
+                            }`}
+                        >
+                            {IsFollowing(profile?.$id) ? (
+                                <>
+                                    <span className="group-hover:hidden">
+                                        Following
+                                    </span>
+
+                                    <span className="hidden group-hover:inline">
+                                        Unfollow
+                                    </span>
+                                </>
+                            ) : (
+                                "Follow"
+                            )}
+                        </button>
+                    </div>
+                )) : (<div>
+                            <h2>You Are Not Following AnyOne yet.</h2>
+                </div>)
+            }
             </div>
         </div>
     );
