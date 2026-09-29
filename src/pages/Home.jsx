@@ -43,6 +43,7 @@ function Home() {
                 featuredImage={post.featuredImage}
                 userid={post.userid}
                 userName={post.userName}
+                likes={post.likes}
             />
         ))}
     </div>

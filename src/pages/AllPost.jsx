@@ -29,7 +29,8 @@ function AllPost() {
                 content={post.content}
                 featuredImage={post.featuredImage}
                 userid={post.userid}
-                userName={post.userName}
+          userName={post.userName}
+          likes={post.likes}
             />
         ))}
     </div>

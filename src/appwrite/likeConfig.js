@@ -20,7 +20,7 @@ async function generateLikeId(postId, userId) {
   // Appwrite allows max 36
   return hash.substring(0, 36);
 }
-export class LikeAppwrite{
+export class AppwriteLike{
   client = new Client();
   databases;
 
@@ -39,7 +39,6 @@ export class LikeAppwrite{
         databaseId: conf.appwriteDatabaseId,
         collectionId: conf.appwriteCollectionId5,
         documentId,
-
         data: {
           postId,
           userId
@@ -65,6 +64,9 @@ export class LikeAppwrite{
 
   async getLikeUsers(postId) {
     try {
+      console.log("DATABASE ID:", conf.appwriteDatabaseId);
+      console.log("LIKE COLLECTION ID:", conf.appwriteCollectionId5);
+      console.log("POST ID:", postId);
       return await this.databases.listDocuments({
         databaseId: conf.appwriteDatabaseId,
         collectionId: conf.appwriteCollectionId5,
@@ -77,3 +79,5 @@ export class LikeAppwrite{
     }
   }
 }
+
+export const appwritelike = new AppwriteLike();

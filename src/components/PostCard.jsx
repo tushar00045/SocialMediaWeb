@@ -16,7 +16,8 @@ function PostCard({
     content,
     featuredImage,
     userid,
-    userName
+    userName,
+    likes
 })
 {  
     const profile = useSelector((state) => state.profile.profiles.find((prof) => prof.$id === userid));
@@ -157,7 +158,7 @@ function PostCard({
                             </span>
 
                             <span>
-                                696
+                                {likes}
                             </span>
 
                         </button>

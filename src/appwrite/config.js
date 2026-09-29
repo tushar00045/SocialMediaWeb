@@ -23,7 +23,7 @@ export class Service{
     status,
     userId,
     userName,
-    likes=0
+    likes=1
   }) {
     try {
       return await this.databases.createDocument({
@@ -37,7 +37,7 @@ export class Service{
           status,
           userid: userId,
           userName,
-          likes:0
+          likes
         }
       });
     } catch (error) {
@@ -66,13 +66,15 @@ export class Service{
 
   async incrementPostLikes(slug) {
     try {
-      return await this.databases.incrementDocumentAttribute({
+      const result= await this.databases.incrementDocumentAttribute({
         databaseId: conf.appwriteDatabaseId,
         collectionId: conf.appwriteCollectionId,
         documentId: slug,
         attribute: "likes",
         value: 1
       });
+      return result;
+      
     } catch (error) {
       console.log("Appwrite service :: incrementPostLikes :: error", error);
       return null;

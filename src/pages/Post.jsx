@@ -16,10 +16,12 @@ import shareImg from "../assets/next.png";
 import CommentBox from "../components/CommentBox";
 import ShowComment from "../components/ShowComment";
 import { setCurrentPost } from "../store/postSlice";
+import { appwritelike, AppwriteLike } from "../appwrite/likeConfig";
 
 export default function Post() {
     const [post, setPost] = useState(null);
     // const [profile, setProfile] = useState();
+    const [likesCount, setLikesCount] = useState(0);
     const [showCommentBox, setShowCommentBox] = useState(false);
     const { slug } = useParams();
     const navigate = useNavigate();
@@ -30,8 +32,20 @@ export default function Post() {
     const isAuthor = post && userData ? post.userid === userData.$id : false;
 
 
-    const posts = useSelector((state) => state.post.posts)
+    const posts = useSelector((state) => state.post.posts);
 
+    const getPost = async () => {
+        const result = await appwriteService.getPost(slug);
+
+        if (!result) return;
+
+        setPost(result);
+        setLikesCount(result.likes || 0);
+    };
+    
+    useEffect(() => {
+        getPost();
+    }, [slug]);
     useEffect(() => {
         if (!slug) return;
 
@@ -47,6 +61,8 @@ export default function Post() {
         appwriteService.getPost(slug).then((postData) => {
             if (postData) {
                 setPost(postData)
+                console.log(postData.likes);
+                //setLikesCount(postData.likes);
                 dispatch(setCurrentPost(postData))
             }
             else navigate("/");
@@ -75,6 +91,44 @@ export default function Post() {
 
     const profileImageUrl = profile?.profileImage ? profileAppwrite.getFileView(profile.profileImage) : userImage;
     console.log(profileImageUrl);
+
+    const handleLikes = async (slug) => {
+        const result = await appwritelike.getLikeUsers(slug);
+        if (!result) {
+            return;
+        }
+     
+        const alreadyLiked = result.documents.some((like) => like.userId === userData?.$id);
+
+        if (alreadyLiked) {
+            // delete the Entry from the Like collection
+            const deleteLike = await appwritelike.deleteLike({ postId:slug, userId: userData?.$id });
+            
+            if (!deleteLike) {
+                return;
+            }
+
+            const updatePost = await appwriteService.decrementPostLikes(slug);
+            
+            if (updatePost) {
+                setLikesCount(updatePost.likes);
+            }
+        }
+        else {
+            //Add the Entry in the like collection
+            const createLike = await appwritelike.createLike({ postId:slug, userId: userData?.$id });
+            
+            if (!createLike) {
+                return;
+            }
+
+            const updatePost = await appwriteService.incrementPostLikes(slug);
+            
+            if (updatePost) {
+                setLikesCount(updatePost.likes);
+            }
+        }
+    }
 
     return (
         <div className="min-h-screen bg-black text-white py-4">
@@ -193,12 +247,12 @@ export default function Post() {
 
 
                             {/* Like */}
-                            <button className="flex items-center gap-2 hover:text-pink-500">
+                            <button onClick={()=>handleLikes(slug)} className="flex items-center gap-2 hover:text-pink-500">
                                 <span className="text-2xl">
                                     <img src={likeImg} className="size-8" />
                                 </span>
                                 <span>
-                                    696
+                                    {likesCount}
                                 </span>
                             </button>
 
