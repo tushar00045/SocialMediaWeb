@@ -22,7 +22,8 @@ export class Service{
     featuredImage,
     status,
     userId,
-    userName
+    userName,
+    likes=0
   }) {
     try {
       return await this.databases.createDocument({
@@ -35,7 +36,8 @@ export class Service{
           featuredImage,
           status,
           userid: userId,
-          userName
+          userName,
+          likes:0
         }
       });
     } catch (error) {
@@ -44,31 +46,60 @@ export class Service{
     }
   }
 
-  async updatePost(slug,{ title, content, featuredImage, status}) {
+  async updatePost(slug,{ title, content, featuredImage, status}){
     try {
-      return await this.databases.updateDocument(
-        conf.appwriteDatabaseId,
-        conf.appwriteCollectionId,
-        slug,
-        {
+      return await this.databases.updateDocument({
+        databaseId:conf.appwriteDatabaseId,
+        collectionId:conf.appwriteCollectionId,
+        documentId:slug,
+        data:{
           title,
           content,
           featuredImage,
           status
         }
-      )
+    })
     } catch (error) {
       console.log("Appwrite serive :: updatePost :: error", error);
+    }
+  }
+
+  async incrementPostLikes(slug) {
+    try {
+      return await this.databases.incrementDocumentAttribute({
+        databaseId: conf.appwriteDatabaseId,
+        collectionId: conf.appwriteCollectionId,
+        documentId: slug,
+        attribute: "likes",
+        value: 1
+      });
+    } catch (error) {
+      console.log("Appwrite service :: incrementPostLikes :: error", error);
+      return null;
+    }
+  }
+  async decrementPostLikes(slug) {
+    try {
+      return await this.databases.decrementDocumentAttribute({
+        databaseId: conf.appwriteDatabaseId,
+        collectionId: conf.appwriteCollectionId,
+        documentId: slug,
+        attribute: "likes",
+        value: 1
+      });
+    } catch (error) {
+      console.log("Appwrite service :: decrementPostLikes :: error", error);
+      return null;
     }
   }
   
   async deletePost(slug) {
     try {
-      await this.databases.deleteDocument(
-        conf.appwriteDatabaseId,
-        conf.appwriteCollectionId,
-        slug
-      )
+      await this.databases.deleteDocument({
+        databaseId:conf.appwriteDatabaseId,
+        collectionId:conf.appwriteCollectionId,
+        documentId:slug
+      })
       return true;
     } catch (error) {
       console.log("Appwrite serive :: deletePost :: error", error);
@@ -78,11 +109,11 @@ export class Service{
 
   async getPost(slug) {
     try {
-      return await this.databases.getDocument(
-        conf.appwriteDatabaseId,
-        conf.appwriteCollectionId,
-        slug
-      )
+      return await this.databases.getDocument({
+        databaseId:conf.appwriteDatabaseId,
+        collectionId:conf.appwriteCollectionId,
+        documentId:slug
+      })
     } catch (error) {
       console.log("Appwrite serive :: getPost :: error", error);
       return false;
@@ -154,6 +185,7 @@ export class Service{
       return false;
     }
   }
+
 }
 
 const service = new Service()
