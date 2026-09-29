@@ -21,7 +21,6 @@ function PostCard({
 {  
     const profile = useSelector((state) => state.profile.profiles.find((prof) => prof.$id === userid));
 
-
     const profileImageUrl = profile?.profileImage ? profileAppwrite.getFileView(profile.profileImage) : userImage;
 
     return (
