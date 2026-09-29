@@ -42,7 +42,7 @@ export default function Post() {
         setPost(result);
         setLikesCount(result.likes || 0);
     };
-    
+
     useEffect(() => {
         getPost();
     }, [slug]);
@@ -129,6 +129,26 @@ export default function Post() {
             }
         }
     }
+
+    const handleShare = async () => {
+        console.log("share button is working.")
+        const shareUrl = window.location.href;
+
+        try {
+            if (navigator.share) {
+            await navigator.share({
+                title: post?.title,
+                text: "Check out this post!",
+                url: shareUrl,
+            });
+            } else {
+            await navigator.clipboard.writeText(shareUrl);
+            alert("Link copied!");
+            }
+        } catch (error) {
+            console.log("Share cancelled or failed:", error);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-black text-white py-4">
@@ -269,7 +289,7 @@ export default function Post() {
 
 
                             {/* Share */}
-                            <button className="text-2xl hover:text-blue-400">
+                            <button onClick={handleShare} className="text-2xl hover:text-blue-400">
                                 <img src={shareImg} className="size-8" />
                             </button>
 
