@@ -10,7 +10,7 @@ function EditPost() {
   const navigate = useNavigate()
   const dispatch = useDispatch();
 
-  
+
   useEffect(() => {
     if (slug) {
       appwriteService.getPost(slug).then((post) => {
@@ -26,12 +26,16 @@ function EditPost() {
     }
   },[slug,navigate])
   return post ? (
-    <div className='py-8'>
+    <div className='py-6 sm:py-10'>
       <Container>
         <PostForm post={post}/>
       </Container>
   </div>
-  ):null
+  ):(
+    <div className="min-h-[50vh] grid place-items-center">
+      <div className="h-10 w-10 rounded-xl bg-linear -to-br from-volt to-iris animate-spin" />
+    </div>
+  )
 }
 
 export default EditPost

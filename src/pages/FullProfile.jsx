@@ -6,8 +6,12 @@ function FullProfile() {
   console.log("Full profile Loaded.")
   return (
     <Container>
-      <Profile />
-      <MyPost/>
+      <div className="pb-6">
+        <Profile />
+        <div className="mx-auto max-w-3xl">
+          <MyPost/>
+        </div>
+      </div>
     </Container>
   )
 }

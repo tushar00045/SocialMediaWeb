@@ -8,6 +8,7 @@ import defaultCoverImage from '../assets/jplenio-nature-3082832_1920.jpg';
 import defaultProfileImage from '../assets/wolf69w-nature-10184389.jpg';
 import { setCurrentProfile, addProfile } from '../store/profileSlice';
 import followAppwrite from '../appwrite/followConfig';
+import { ArrowLeftIcon, MoreIcon, MessageIcon, VerifiedIcon, CalendarIcon, PinIcon } from './Icons';
 
 function Profile() {
     const userData = useSelector((state) => state.auth.userData);
@@ -80,7 +81,7 @@ function Profile() {
                 return;
             }
             console.log(result);
-            
+
             setIsFollowing(result.documents.length > 0);
             setFollowLoading(false);
         };
@@ -156,13 +157,13 @@ function Profile() {
         }
 
         console.log(result);
-        
+
         setFollower(result.documents.length);
     }
 
     const handlegetFollowing = async() =>{
         const result = await followAppwrite.getFollowing(followingId);
-        
+
         if (!result) {
             return;
         }
@@ -190,152 +191,174 @@ function Profile() {
 
     if (!profile) {
         return (
-            <div className="min-h-screen bg-black text-white flex items-center justify-center">
+            <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-zinc-400">
+                <div className="h-10 w-10 rounded-xl bg-linear-to-br from-volt to-iris animate-spin" />
                 Loading profile...
             </div>
         );
     }
 
+    const handle = userName?.replace(/\s+/g, "_").toLowerCase();
+
     return (
-        <div className="min-h-screen bg-black text-white">
-            <div className="sticky top-0 z-10 bg-black/90 backdrop-blur-md">
-                <div className="flex items-center gap-6 px-5 py-3">
-                    <button
-                        onClick={() => navigate(-1)}
-                        className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-900 text-2xl"
-                    >
-                        ←
-                    </button>
-
-                    <div>
-                        <h1 className="font-light text-shadow-indigo-700">{userName}</h1>
-                        <p className="text-sm text-gray-500">11.3K posts</p>
-                    </div>
-                </div>
-            </div>
-
-            <div className="relative">
-                <div className="w-full h-64 overflow-hidden">
-                    <img src={coverImageUrl} alt="Cover" className="w-full h-full object-cover" />
-                </div>
-
-                <div className="absolute left-5 -bottom-16">
-                    <div className="w-36 h-36 rounded-full overflow-hidden border-4 border-black bg-gray-800">
-                        <img src={profileImageUrl} alt={userName} className="w-full h-full object-cover" />
-                    </div>
-                </div>
-            </div>
-
-            <div className="flex justify-end gap-3 px-5 pt-4">
-                <button className="w-12 h-12 rounded-full border border-gray-700 hover:bg-gray-900 text-xl">
-                    ⋯
-                </button>
-
-                <button className="w-12 h-12 rounded-full border border-gray-700 hover:bg-gray-900 text-xl">
-                    💬
-                </button>
-
+        <div className="mx-auto max-w-3xl pt-4 text-zinc-100 animate-rise">
+            {/* ================= TOP BAR ================= */}
+            <div className="mb-3 flex items-center gap-3">
                 <button
-                    disabled={followLoading}
-                    onClick={() => {
-                        if (userData?.$id === userId) {
-                            setShowEditProfile(true);
-                        } else if (isFollowing) {
-                            handleUnfollow();
-                        } else {
-                            handleFollow();
-                        }
-                    }}
-                    className={`
-                        group
-                        px-6 py-2
-                        rounded-full
-                        font-bold
-                        transition-all duration-200
-                        disabled:opacity-50
-                        disabled:cursor-not-allowed
-
-                        ${
-                            userData?.$id === userId
-                                ? "bg-white text-black hover:bg-gray-200"
-                                : isFollowing
-                                    ? "border border-gray-500 text-white bg-transparent hover:border-red-500 hover:text-red-500"
-                                    : "bg-white text-black hover:bg-gray-200"
-                        }
-                    `}
+                    onClick={() => navigate(-1)}
+                    className="grid h-10 w-10 place-items-center rounded-xl text-zinc-400 hover:text-white hover:bg-white/6 transition"
                 >
-                    {userData?.$id === userId ? (
-                        "Edit Profile"
-                    ) : followLoading ? (
-                        "Loading..."
-                    ) : isFollowing ? (
-                        <>
-                            {/* Normal */}
-                            <span className="group-hover:hidden">
-                                Following
-                            </span>
-
-                            {/* Hover */}
-                            <span className="hidden group-hover:inline">
-                                Unfollow
-                            </span>
-                        </>
-                    ) : (
-                        "Follow"
-                    )}
+                    <ArrowLeftIcon size={20} />
                 </button>
+
+                <div className="leading-tight">
+                    <h1 className="font-display font-semibold text-white">{userName}</h1>
+                    <p className="text-xs text-zinc-500">{posts.length} posts</p>
+                </div>
             </div>
 
-            <div className="px-5 pt-5">
-                <div className="flex items-center gap-2">
-                    <h2 className="text-2xl font-bold">{userName}</h2>
-                    <span className="text-blue-500 text-xl">●</span>
+            {/* ================= PROFILE CARD ================= */}
+            <section className="surface overflow-hidden rounded-3xl">
+                <div className="relative">
+                    <div className="w-full h-44 sm:h-60 overflow-hidden">
+                        <img src={coverImageUrl} alt="Cover" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-linear-to-t from-ink-900 via-ink-900/10 to-transparent" />
+                    </div>
+
+                    <div className="absolute left-5 sm:left-6 -bottom-14">
+                        <div className="ring-gradient rounded-[30px] p-0.75 shadow-[0_20px_50px_-15px_rgba(139,124,255,0.6)]">
+                            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-[27px] overflow-hidden border-4 border-ink-900 bg-ink-800">
+                                <img src={profileImageUrl} alt={userName} className="w-full h-full object-cover" />
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <p className="text-gray-500 text-lg">@{userName}</p>
+                <div className="flex justify-end gap-2 px-5 sm:px-6 pt-4">
+                    <button className="grid h-11 w-11 place-items-center rounded-xl border border-white/10 text-zinc-300 hover:bg-white/6 transition">
+                        <MoreIcon size={20} />
+                    </button>
 
-                <p className="mt-4 text-gray-300">{profile.bio || 'No bio available yet.'}</p>
-
-                <p className="mt-2 text-gray-500">Joined August 2026</p>
-
-                <div className="flex gap-5 mt-4">
-                  <button
-                       onClick={() => 
-                         navigate(`/profile/${userId}/following`)    
-                       }
-                    >          
-                    <span className="font-bold text-white">{ following}</span>{' '}
-                    <span className="text-gray-500">Following</span>
+                    <button className="grid h-11 w-11 place-items-center rounded-xl border border-white/10 text-zinc-300 hover:bg-white/6 transition">
+                        <MessageIcon size={19} />
                     </button>
 
                     <button
-                        onClick={() =>
-                            navigate(`/profile/${userId}/followers`)
-                        }
+                        disabled={followLoading}
+                        onClick={() => {
+                            if (userData?.$id === userId) {
+                                setShowEditProfile(true);
+                            } else if (isFollowing) {
+                                handleUnfollow();
+                            } else {
+                                handleFollow();
+                            }
+                        }}
+                        className={`
+                            group
+                            px-6 py-2.5
+                            rounded-xl
+                            font-semibold
+                            transition-all duration-200
+                            disabled:opacity-50
+                            disabled:cursor-not-allowed
+
+                            ${
+                                userData?.$id === userId
+                                    ? "border border-white/15 text-white bg-white/4 hover:bg-white/4"
+                                    : isFollowing
+                                        ? "border border-white/15 text-white bg-transparent hover:border-coral hover:text-coral hover:bg-coral/10"
+                                        : "bg-volt text-black hover:brightness-110 shadow-[0_8px_30px_-10px_rgba(212,255,58,0.7)]"
+                            }
+                        `}
                     >
-                    <span className="font-bold text-white">{ follower}</span>{' '}
-                    <span className="text-gray-500">Followers</span>
+                        {userData?.$id === userId ? (
+                            "Edit Profile"
+                        ) : followLoading ? (
+                            "Loading..."
+                        ) : isFollowing ? (
+                            <>
+                                {/* Normal */}
+                                <span className="group-hover:hidden">
+                                    Following
+                                </span>
+
+                                {/* Hover */}
+                                <span className="hidden group-hover:inline">
+                                    Unfollow
+                                </span>
+                            </>
+                        ) : (
+                            "Follow"
+                        )}
                     </button>
                 </div>
+
+                <div className="px-5 sm:px-6 pt-6 pb-6">
+                    <div className="flex items-center gap-2">
+                        <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight">{userName}</h2>
+                        <VerifiedIcon size={20} className="text-volt" />
+                    </div>
+
+                    <p className="text-zinc-500">@{handle}</p>
+
+                    <p className="mt-4 max-w-xl text-zinc-300 leading-7">{profile.bio || 'No bio available yet.'}</p>
+
+                    <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-zinc-500">
+                        {profile.address && (
+                            <span className="inline-flex items-center gap-1.5"><PinIcon size={15} /> {profile.address}</span>
+                        )}
+                        <span className="inline-flex items-center gap-1.5"><CalendarIcon size={15} /> Joined August 2026</span>
+                    </div>
+
+                    {/* ================= STATS TILES ================= */}
+                    <div className="mt-5 grid grid-cols-3 gap-2 sm:max-w-md">
+                        <div className="rounded-2xl bg-white/3 border border-white/6 px-4 py-3">
+                            <div className="font-display text-xl font-bold text-white">{posts.length}</div>
+                            <div className="text-xs uppercase tracking-wider text-zinc-500">Posts</div>
+                        </div>
+
+                        <button
+                            onClick={() =>
+                                navigate(`/profile/${userId}/following`)
+                            }
+                            className="text-left rounded-2xl bg-white/3 border border-white/6 px-4 py-3 hover:border-volt/40 hover:bg-volt/6 transition"
+                        >
+                            <div className="font-display text-xl font-bold text-white">{ following}</div>
+                            <div className="text-xs uppercase tracking-wider text-zinc-500">Following</div>
+                        </button>
+
+                        <button
+                            onClick={() =>
+                                navigate(`/profile/${userId}/followers`)
+                            }
+                            className="text-left rounded-2xl bg-white/3 border border-white/6 px-4 py-3 hover:border-volt/40 hover:bg-volt/6 transition"
+                        >
+                            <div className="font-display text-xl font-bold text-white">{ follower}</div>
+                            <div className="text-xs uppercase tracking-wider text-zinc-500">Followers</div>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            {/* ================= TABS ================= */}
+            <div className="mt-5 flex gap-1 rounded-2xl bg-white/3 border border-white/6 p-1">
+                <button className="flex-1 rounded-xl py-2.5 text-sm font-semibold bg-volt text-black">Posts</button>
+                <button className="flex-1 rounded-xl py-2.5 text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition">Replies</button>
+                <button className="flex-1 rounded-xl py-2.5 text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition">Media</button>
+                <button className="flex-1 rounded-xl py-2.5 text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition">Likes</button>
             </div>
 
-            <div className="flex mt-6 border-b border-gray-800">
-                <button className="flex-1 py-4 font-bold border-b-4 border-blue-500">Posts</button>
-                <button className="flex-1 py-4 text-gray-500 hover:bg-gray-900">Replies</button>
-                <button className="flex-1 py-4 text-gray-500 hover:bg-gray-900">Media</button>
-                <button className="flex-1 py-4 text-gray-500 hover:bg-gray-900">Likes</button>
-            </div>
-
-            <div className="px-5 py-5">
-                <div className="border-b border-gray-800 pb-5">
+            <div className="py-4">
+                <div className="surface rounded-2xl p-4">
                     <div className="flex gap-3">
-                        <img src={profileImageUrl} alt={userName} className="w-10 h-10 rounded-full object-cover" />
+                        <img src={profileImageUrl} alt={userName} className="w-10 h-10 rounded-xl object-cover" />
                         <div>
-                            <div className="flex gap-2">
-                                <span className="font-bold">{userName}</span>
-                                <span className="text-gray-500">@{userName}</span>
+                            <div className="flex gap-2 text-sm">
+                                <span className="font-semibold text-white">{userName}</span>
+                                <span className="text-zinc-500">@{userName}</span>
                             </div>
-                            <p className="mt-2 text-gray-300">This is my first post.</p>
+                            <p className="mt-1 text-zinc-300">This is my first post.</p>
                         </div>
                     </div>
                 </div>

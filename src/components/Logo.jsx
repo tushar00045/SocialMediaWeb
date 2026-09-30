@@ -7,7 +7,7 @@ function Logo({
 ) {
   return (
     <div>
-      <h1 className={`${text}`}>Logo</h1>
+      <h1 className={`${text}`}>Pulse</h1>
     </div>
   )
 }

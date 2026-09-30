@@ -5,6 +5,7 @@ import AppwriteService from "../appwrite/config";
 import { useSelector } from 'react-redux';
 import followAppwrite from '../appwrite/followConfig';
 import defaultProfileImage from "../assets/wolf69w-nature-10184389.jpg"
+import { ArrowLeftIcon } from '../components/Icons';
 
 function Follow() {
   const {userId,type} = useParams();
@@ -15,15 +16,15 @@ function Follow() {
     const [myfollowingIds, setMyfollowingIds] = useState([]);
 
   const followingId = userId;
-  
+
     const profiles = useSelector((state) => state.profile.profiles);
-    
+
     const userData = useSelector((state) => state.auth.userData);
 
   const currentProfile = profiles.find((profile) => profile?.$id === userId);
 
   const profileName = currentProfile?.profileName;
-  
+
   console.log(profileName);
 
     const handlegetFollower = async () => {
@@ -34,7 +35,7 @@ function Follow() {
 
       console.log(result);
         console.log(result.documents);
-        
+
         const followerIds = result.documents.map((document) => document.followerId);
         console.log(followerIds);
         setFollowers(followerIds);
@@ -42,13 +43,13 @@ function Follow() {
 
     const handlegetFollowing = async() =>{
         const result = await followAppwrite.getFollowing(followingId);
-        
+
         if (!result) {
             return;
         }
         console.log(result);
         console.log(result.documents);
-        
+
         const followingIds = result.documents.map((document) => document.followingId);
         console.log(followingIds);
         setFollowing(followingIds);
@@ -56,7 +57,7 @@ function Follow() {
 
     const handleGetMyFollowing = async () => {
         if (!userData?.$id) {
-            return; 
+            return;
         }
 
         const result = await followAppwrite.getFollowing(userData?.$id);
@@ -137,37 +138,91 @@ function Follow() {
 
 
   const navigate = useNavigate();
+
+    // ---------- presentational helpers (no logic change) ----------
+    const followBtnClass = (profileId) => `group shrink-0 px-5 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+        IsFollowing(profileId)
+            ? "border border-white/15 text-white bg-transparent hover:border-coral hover:text-coral hover:bg-coral/10"
+            : "bg-volt text-black hover:brightness-110"
+    }`;
+
+    const FollowLabel = ({ profileId }) => IsFollowing(profileId) ? (
+        <>
+            <span className="group-hover:hidden">
+                Following
+            </span>
+
+            <span className="hidden group-hover:inline">
+                Unfollow
+            </span>
+        </>
+    ) : (
+        "Follow"
+    );
+
+    const PersonRow = ({ profile, children }) => (
+        <div
+            className="surface flex items-center gap-4 rounded-2xl px-4 py-3.5 hover:border-white/[0.12] transition animate-rise"
+        >
+            <button onClick={() => navigate(`/profile/${profile?.$id}`)} className="shrink-0">
+                <img
+                    src={profile?.profileImage ? profileAppwrite.getFileView(profile.profileImage) : defaultProfileImage}
+                    alt="Profile"
+                    className="w-12 h-12 rounded-[14px] object-cover bg-ink-800"
+                />
+            </button>
+
+            <div className="flex-1 min-w-0">
+                <h2 className="font-semibold text-white truncate">
+                    {profile?.profileName}
+                </h2>
+
+                <p className="text-zinc-500 text-sm truncate">
+                    {profile?.bio}
+                </p>
+            </div>
+
+            {children}
+        </div>
+    );
+
+    const Empty = ({ text }) => (
+        <div className="rounded-3xl border border-dashed border-white/10 px-6 py-14 text-center">
+            <h2 className="text-zinc-400">{text}</h2>
+        </div>
+    );
+
     return (
-        <div className="min-h-screen bg-black text-white">
+        <div className="mx-auto max-w-2xl px-3 sm:px-0 py-5 text-zinc-100">
             {/* ================= HEADER ================= */}
-            <div className="sticky top-0 z-20 bg-black/90 backdrop-blur-md">
+            <div className="mb-5">
 
                 {/* Top Header */}
-                <div className="flex items-center gap-5 px-6 py-4">
+                <div className="flex items-center gap-3 mb-4">
                     {/* Back Button */}
-                    <button onClick={()=>navigate(-1)} className="w-10 h-10 flex items-center justify-center rounded-full text-2xl hover:bg-gray-900 transition">
-                        ←
+                    <button onClick={()=>navigate(-1)} className="grid h-10 w-10 place-items-center rounded-xl text-zinc-400 hover:text-white hover:bg-white/[0.06] transition">
+                        <ArrowLeftIcon size={20} />
                     </button>
 
                     {/* Profile Name */}
-                    <div>
-                        <h1 className="text-xl font-bold">
+                    <div className="leading-tight">
+                        <h1 className="font-display text-xl font-bold text-white">
                             {profileName}
                         </h1>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-zinc-500">
                             @{profileName?.replace(/\s+/g, "_").toLowerCase()}
                         </p>
                     </div>
 
                 </div>
                 {/* ================= TABS ================= */}
-                <div className="flex border-b border-gray-800">
+                <div className="flex gap-1 rounded-2xl bg-white/[0.03] border border-white/[0.06] p-1">
             <button
               onClick={()=> navigate(`/profile/${userId}/followers`)}
-                        className={`flex-1 py-4 font-bold transition ${
+                        className={`flex-1 rounded-xl py-2.5 text-sm font-semibold transition ${
                             type === "followers"
-                                ? "text-white border-b-4 border-blue-500"
-                                : "text-gray-500 border-b-4 border-transparent hover:bg-gray-900"
+                                ? "bg-volt text-black"
+                                : "text-zinc-400 hover:text-white hover:bg-white/[0.05]"
                         }`}
                     >
                         Followers
@@ -175,10 +230,10 @@ function Follow() {
 
             <button
               onClick={()=>navigate(`/profile/${userId}/following`)}
-                        className={`flex-1 py-4 font-bold transition ${
+                        className={`flex-1 rounded-xl py-2.5 text-sm font-semibold transition ${
                             type === "following"
-                                ? "text-white border-b-4 border-blue-500"
-                                : "text-gray-500 border-b-4 border-transparent hover:bg-gray-900"
+                                ? "bg-volt text-black"
+                                : "text-zinc-400 hover:text-white hover:bg-white/[0.05]"
                         }`}
                     >
                         Following
@@ -186,105 +241,30 @@ function Follow() {
 
                 </div>
             </div>
-        
-            <div className="w-full">
-          
+
+            <div className="w-full space-y-2.5">
+
             {type === "followers"
                     ? followersProfile.length > 0?followersProfile.map((profile) =>(
-                  
-                    <div
-                        key={profile?.$id}
-                        className="flex items-center gap-4 px-6 py-4 border-b border-gray-900 hover:bg-gray-950 transition"
-                    >
-                        <img
-                            src={profile?.profileImage ? profileAppwrite.getFileView(profile.profileImage) : defaultProfileImage}
-                            alt="Profile"
-                            className="w-12 h-12 rounded-full object-cover shrink-0"
-                        />
-
-                        <div className="flex-1 min-w-0">
-                            <h2 className="font-bold text-[16px] truncate">
-                                {profile?.profileName}
-                            </h2>
-
-                            <p className="text-gray-500 text-[15px]">
-                                {profile?.bio}
-                            </p>
-                        </div>
-
+                    <PersonRow key={profile?.$id} profile={profile}>
                         {profile?.$id!== userData?.$id &&(<button
                             onClick={() => handleFollow(profile?.$id)}
-                            className={`group shrink-0 px-5 py-2 rounded-full font-bold transition-all duration-200 ${
-                                IsFollowing(profile?.$id)
-                                    ? "border border-gray-500 text-white bg-transparent hover:border-red-500 hover:text-red-500"
-                                    : "bg-white text-black hover:bg-gray-200"
-                            }`}
+                            className={followBtnClass(profile?.$id)}
                         >
-                            {IsFollowing(profile?.$id) ? (
-                                <>
-                                    <span className="group-hover:hidden">
-                                        Following
-                                    </span>
-
-                                    <span className="hidden group-hover:inline">
-                                        Unfollow
-                                    </span>
-                                </>
-                            ) : (
-                                "Follow"
-                            )}
+                            <FollowLabel profileId={profile?.$id} />
                         </button>)}
-                    </div>
-                )) : (<div>
-                        <h2>You Don`t have Any Followers yet.</h2>
-                    </div>)
+                    </PersonRow>
+                )) : (<Empty text="You Don`t have Any Followers yet." />)
                 : followingProfile.length>0?followingProfile.filter((profile)=> profile.$id!==userData.$id).map((profile) => (
-                    <div
-                        key={profile?.$id}
-                        className="flex items-center gap-4 px-6 py-4 border-b border-gray-900 hover:bg-gray-950 transition"
-                    >
-                        <img
-                            src={profile?.profileImage ? profileAppwrite.getFileView(profile.profileImage) : defaultProfileImage}
-                            alt="Profile"
-                            className="w-12 h-12 rounded-full object-cover shrink-0"
-                        />
-
-                        <div className="flex-1 min-w-0">
-                            <h2 className="font-bold text-[16px] truncate">
-                                {profile?.profileName}
-                            </h2>
-
-                            <p className="text-gray-500 text-[15px]">
-                                {profile?.bio}
-                            </p>
-                        </div>
-
+                    <PersonRow key={profile?.$id} profile={profile}>
                         <button
                             onClick={() => handleFollow(profile?.$id)}
-                            className={`group shrink-0 px-5 py-2 rounded-full font-bold transition-all duration-200 ${
-                                IsFollowing(profile?.$id)
-                                    ? "border border-gray-500 text-white bg-transparent hover:border-red-500 hover:text-red-500"
-                                    : "bg-white text-black hover:bg-gray-200"
-                            }`}
+                            className={followBtnClass(profile?.$id)}
                         >
-                            {IsFollowing(profile?.$id) ? (
-                                <>
-                                    <span className="group-hover:hidden">
-                                        Following
-                                    </span>
-
-                                    <span className="hidden group-hover:inline">
-                                        Unfollow
-                                    </span>
-                                </>
-                            ) : (
-                                "Follow"
-                            )}
+                            <FollowLabel profileId={profile?.$id} />
                         </button>
-                    </div>
-                )) : (<div>
-                            <h2>You Are Not Following AnyOne yet.</h2>
-                </div>)
+                    </PersonRow>
+                )) : (<Empty text="You Are Not Following AnyOne yet." />)
             }
             </div>
         </div>

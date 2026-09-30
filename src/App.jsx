@@ -38,18 +38,20 @@ function App() {
     fetchProfiles();
   },[dispatch])
 
-  return !loading ? (
-    <div className='min-h-screen flex flex-wrap content-between bg-black'>
-      <div className='w-full block'>
-        <Header />
-        <main>
-          <Outlet/>
-        </main>
-        <Footer/>
-      </div>
+return !loading ? (
+  <div className="min-h-screen flex flex-col bg-ink-950 text-zinc-100 font-sans">
+      <Header />
+      <main className="flex-1 pb-28 md:pb-0">
+        <Outlet />
+      </main>
+      <Footer />
     </div>
-      
-  ):null
+  ) : (
+    <div className="min-h-screen grid place-items-center bg-ink-950">
+      <div className="h-10 w-10 rounded-xl bg-linear-to-br from-volt to-iris animate-spin" />
+    </div>
+  )
+
 }
 
 export default App

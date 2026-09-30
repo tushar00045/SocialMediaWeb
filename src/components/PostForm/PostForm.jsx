@@ -20,7 +20,7 @@ function PostForm({post}) {
     const navigate = useNavigate();
     const userData = useSelector(state => state.auth.userData);
 
-  
+
     const submit = async (data) => {
         console.log(data)
         // console.log(userData.name)
@@ -48,7 +48,7 @@ function PostForm({post}) {
                 updateData.featuredImage = file.$id;
             }
 
-            const dbPost = await appwriteService.updatePost(post.$id, updateData); 
+            const dbPost = await appwriteService.updatePost(post.$id, updateData);
 
             if (dbPost) {
                 navigate(`/post/${dbPost.$id}`);
@@ -80,7 +80,7 @@ function PostForm({post}) {
 
       return "";
   }, []);
-  
+
   React.useEffect(() => {
       const subscription = watch((value, { name }) => {
           if (name === "title") {
@@ -96,55 +96,70 @@ function PostForm({post}) {
           subscription.unsubscribe();
       };
   }, [watch, slugTransform, setValue]);
-    
-  
-  
+
+
+
   return (
-      <form onSubmit={handleSubmit(submit)} className="flex flex-wrap">
-            <div className="w-2/3 px-2">
+      <form onSubmit={handleSubmit(submit)} className="mx-auto max-w-6xl animate-rise">
+            {/* Heading */}
+            <div className="mb-6 px-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-volt">{post ? "Editing" : "Studio"}</p>
+                <h1 className="mt-1 font-display text-3xl sm:text-4xl font-bold tracking-tight text-white">
+                    {post ? "Polish your post" : "Create something new"}
+                </h1>
+            </div>
+
+            <div className="grid gap-5 lg:grid-cols-3">
+            {/* ===== Main column ===== */}
+            <div className="lg:col-span-2 surface rounded-3xl p-5 sm:p-6 space-y-1">
                 <Input
-                    label="Title :"
-                    placeholder="Title"
-                    className="mb-4"
+                    label="Title"
+                    placeholder="Give it a catchy title"
+                    className="mb-4 text-lg"
                     {...register("title", { required: true })}
                 />
                 <Input
-                    label="Slug :"
-                    placeholder="Slug"
-                    className="mb-4"
+                    label="Slug"
+                    placeholder="auto-generated-slug"
+                    className="mb-4 font-mono text-sm text-zinc-400"
                     {...register("slug", { required: true })}
                     onInput={(e) => {
                         setValue("slug", slugTransform(e.currentTarget.value), { shouldValidate: true });
                     }}
                 />
-                <RTE label="Content :" name="content" control={control} defaultValue={getValues("content")} />
+                <div className="overflow-hidden rounded-2xl text-zinc-200 [&_label]:mb-2 [&_label]:inline-block [&_label]:pl-1 [&_label]:text-xs [&_label]:font-semibold [&_label]:uppercase [&_label]:tracking-[0.12em] [&_label]:text-zinc-400">
+                    <RTE label="Content :" name="content" control={control} defaultValue={getValues("content")} />
+                </div>
             </div>
-            <div className="w-1/3 px-2">
+
+            {/* ===== Side column ===== */}
+            <div className="surface rounded-3xl p-5 sm:p-6 h-fit lg:sticky lg:top-28 space-y-1">
                 <Input
-                    label="Featured Image :"
+                    label="Featured Image"
                     type="file"
-                    className="mb-4"
+                    className="mb-4 text-sm text-zinc-400 py-2.5"
                     accept="image/png, image/jpg, image/jpeg, image/gif,video/MP4"
                     {...register("image", { required: !post })}
                 />
                 {post && (
-                    <div className="w-full mb-4">
+                    <div className="w-full mb-4 overflow-hidden rounded-2xl border border-white/6">
                         <img
                             src={appwriteService.getFileView(post.featuredImage)}
                             alt={post.title}
-                            className="rounded-lg"
+                            className="w-full object-cover"
                         />
                     </div>
                 )}
                 <Select
                     options={["active", "inactive"]}
                     label="Status"
-                    className="mb-4"
+                    className="mb-5"
                     {...register("status", { required: true })}
                 />
-                <Button type="submit" bgColor={post ? "bg-green-500" : undefined} className="w-full">
+                <Button type="submit" bgColor={post ? "bg-iris" : undefined} textColor={post ? "text-white" : undefined} className="w-full py-3.5">
                     {post ? "Update" : "Submit"}
                 </Button>
+            </div>
             </div>
       </form>
   )

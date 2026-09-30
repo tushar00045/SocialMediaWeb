@@ -8,15 +8,11 @@ import userImage from "../assets/wolf69w-nature-10184389.jpg"
 import { useDispatch } from "react-redux";
 import authService from "../appwrite/auth";
 import profileAppwrite from "../appwrite/profileConfig";
-import commentImg from "../assets/chatImg.png"
-import tweetImg from "../assets/retweet.png"
-import likeImg from "../assets/like.png"
-import viewsImg from "../assets/visual.png"
-import shareImg from "../assets/next.png";
 import CommentBox from "../components/CommentBox";
 import ShowComment from "../components/ShowComment";
 import { setCurrentPost } from "../store/postSlice";
 import { appwritelike, AppwriteLike } from "../appwrite/likeConfig";
+import { ArrowLeftIcon, CommentIcon, RepostIcon, HeartIcon, EyeIcon, ShareIcon, MoreIcon, VerifiedIcon, BookmarkIcon } from "../components/Icons";
 
 export default function Post() {
     const [post, setPost] = useState(null);
@@ -57,7 +53,7 @@ export default function Post() {
             dispatch(setCurrentPost(foundPost));
             return;
         }
-        
+
         appwriteService.getPost(slug).then((postData) => {
             if (postData) {
                 setPost(postData)
@@ -67,9 +63,9 @@ export default function Post() {
             }
             else navigate("/");
         });
-    
+
     },[posts,slug,navigate,dispatch])
-    
+
     const userId = post?.userid;
 
     const profile = useSelector((state) => state.profile.profiles.find((prof) => prof.$id === userId));
@@ -97,19 +93,19 @@ export default function Post() {
         if (!result) {
             return;
         }
-     
+
         const alreadyLiked = result.documents.some((like) => like.userId === userData?.$id);
 
         if (alreadyLiked) {
             // delete the Entry from the Like collection
             const deleteLike = await appwritelike.deleteLike({ postId:slug, userId: userData?.$id });
-            
+
             if (!deleteLike) {
                 return;
             }
 
             const updatePost = await appwriteService.decrementPostLikes(slug);
-            
+
             if (updatePost) {
                 setLikesCount(updatePost.likes);
             }
@@ -117,13 +113,13 @@ export default function Post() {
         else {
             //Add the Entry in the like collection
             const createLike = await appwritelike.createLike({ postId:slug, userId: userData?.$id });
-            
+
             if (!createLike) {
                 return;
             }
 
             const updatePost = await appwriteService.incrementPostLikes(slug);
-            
+
             if (updatePost) {
                 setLikesCount(updatePost.likes);
             }
@@ -150,40 +146,51 @@ export default function Post() {
         }
     };
 
+    const actionBtn = "flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-sm font-medium text-zinc-400 bg-white/[0.03] border border-white/[0.06] transition-all duration-200";
+
     return (
-        <div className="min-h-screen bg-black text-white py-4">
+        <div className="min-h-screen py-6 text-zinc-100">
             <Container>
+              <div className="mx-auto max-w-2xl animate-rise">
+
+                {/* Back */}
+                <button
+                    onClick={() => navigate(-1)}
+                    className="mb-4 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/[0.05] transition"
+                >
+                    <ArrowLeftIcon size={18} /> Back
+                </button>
+
+                <article className="surface overflow-hidden rounded-3xl">
                 {/* ================= USER INFORMATION ================= */}
-                <div className="px-4 py-4">
+                <div className="px-5 pt-5 pb-4 sm:px-6">
                     <div className="flex items-center justify-between">
                         {/* User */}
                         <div className="flex items-center gap-3">
 
-                            <div className="w-12 h-12 rounded-full overflow-hidden">
+                            <div className="ring-gradient rounded-2xl p-[2px]">
                                 <img
                                     src={profileImageUrl}
                                     alt="User"
-                                    className="w-full h-full object-cover"
+                                    className="w-12 h-12 rounded-[14px] object-cover bg-ink-800"
                                 />
                             </div>
 
-                            <div>
-                                <div className="flex items-center gap-1">
+                            <div className="leading-tight">
+                                <div className="flex items-center gap-1.5">
                                    <Link
                                         to={`/profile/${post.userid}`}
                                         onClick={()=>console.log("Profile Link clicked.")}
-                                        className="text-white hover:underline"
+                                        className="font-semibold text-white hover:text-volt transition-colors"
                                     >
                                         {userName}
                                     </Link>
 
                                     {/* Verified badge */}
-                                    <span className="text-blue-500 text-lg">
-                                        ●
-                                    </span>
+                                    <VerifiedIcon size={16} className="text-volt" />
                                 </div>
 
-                                <span className="text-gray-300">
+                                <span className="text-sm text-zinc-500">
                                     @{userName.replace(/\s+/g, "_").toLowerCase()}
                                 </span>
                             </div>
@@ -192,14 +199,14 @@ export default function Post() {
 
 
                         {/* Right side */}
-                        <div className="flex items-center gap-4 text-gray-400">
+                        <div className="flex items-center gap-1 text-zinc-500">
 
-                            <button className="text-xl hover:text-white">
-                                ◉
+                            <button className="grid h-9 w-9 place-items-center rounded-xl hover:text-white hover:bg-white/[0.06] transition">
+                                <BookmarkIcon size={18} />
                             </button>
 
-                            <button className="text-2xl hover:text-white">
-                                ⋯
+                            <button className="grid h-9 w-9 place-items-center rounded-xl hover:text-white hover:bg-white/[0.06] transition">
+                                <MoreIcon size={20} />
                             </button>
 
                         </div>
@@ -209,46 +216,56 @@ export default function Post() {
 
 
                 {/* ================= POST CONTENT ================= */}
-                <div className="px-4">
+                <div className="px-5 sm:px-6">
 
-                    <div className="text-lg leading-7 mb-5 text-white">
+                    <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-white mb-3">
+                        {post.title}
+                    </h1>
+
+                    <div className="post-body text-[17px] leading-8 mb-5 text-zinc-200">
                         {parse(post.content)}
                     </div>
 
 
                     {/* ================= FEATURED IMAGE ================= */}
-                    <div className="w-full mb-4">
+                    <div className="w-full mb-4 overflow-hidden rounded-2xl border border-white/[0.06] bg-black/40">
                         <img
                             src={appwriteService.getFileView(
                                 post.featuredImage
                             )}
                             alt={post.title}
-                            className="w-full max-h-162.5 object-contain rounded-2xl"
+                            className="w-full max-h-162.5 object-contain"
                         />
                     </div>
 
 
                     {/* ================= DATE / VIEWS ================= */}
-                    <div className="text-gray-500 text-sm py-3">
-                        8:34 PM · Aug 12, 2026 ·{" "}
-                        <span className="text-gray-300 font-semibold">
+                    <div className="flex items-center gap-2 text-zinc-500 text-sm py-3">
+                        <span>8:34 PM · Aug 12, 2026</span>
+                        <span className="h-1 w-1 rounded-full bg-zinc-600" />
+                        <span className="text-zinc-200 font-semibold">
                             64.6K Views
                         </span>
                     </div>
 
 
                     {/* ================= ACTION BAR ================= */}
-                    <div className="border-t border-b border-gray-800 py-4">
+                    <div className="border-t border-white/[0.06] py-4">
 
-                        <div className="flex items-center justify-between text-gray-500">
+                        <div className="flex flex-wrap items-center gap-2">
+
+                            {/* Like */}
+                            <button onClick={()=>handleLikes(slug)} className={`${actionBtn} hover:text-coral hover:border-coral/40 hover:bg-coral/10`}>
+                                <HeartIcon size={19} />
+                                <span>
+                                    {likesCount}
+                                </span>
+                            </button>
+
 
                             {/* Comment */}
-                            <button onClick={()=>setShowCommentBox(true)} className="flex items-center gap-2 hover:text-blue-400">
-                                <span className="text-2xl">
-                                    <img src={commentImg}
-                                        className="size-8"
-                                    />
-                                </span>
+                            <button onClick={()=>setShowCommentBox(true)} className={`${actionBtn} hover:text-iris hover:border-iris/40 hover:bg-iris/10`}>
+                                <CommentIcon size={19} />
                                 <span>
                                     13
                                 </span>
@@ -256,32 +273,17 @@ export default function Post() {
 
 
                             {/* Repost */}
-                            <button className="flex items-center gap-2 hover:text-green-400">
-                                <span className="text-2xl">
-                                    <img src={tweetImg} className="size-8" />
-                                </span>
+                            <button className={`${actionBtn} hover:text-volt hover:border-volt/40 hover:bg-volt/10`}>
+                                <RepostIcon size={19} />
                                 <span>
                                     180
                                 </span>
                             </button>
 
 
-                            {/* Like */}
-                            <button onClick={()=>handleLikes(slug)} className="flex items-center gap-2 hover:text-pink-500">
-                                <span className="text-2xl">
-                                    <img src={likeImg} className="size-8" />
-                                </span>
-                                <span>
-                                    {likesCount}
-                                </span>
-                            </button>
-
-
                             {/* views*/}
-                            <button className="flex items-center gap-2 hover:text-yellow-400">
-                                <span className="text-2xl">
-                                    <img src={viewsImg} className="size-8" />
-                                </span>
+                            <button className={`${actionBtn} hover:text-white`}>
+                                <EyeIcon size={19} />
                                 <span>
                                     1.6K
                                 </span>
@@ -289,8 +291,9 @@ export default function Post() {
 
 
                             {/* Share */}
-                            <button onClick={handleShare} className="text-2xl hover:text-blue-400">
-                                <img src={shareImg} className="size-8" />
+                            <button onClick={handleShare} className={`${actionBtn} ml-auto hover:text-volt hover:border-volt/40 hover:bg-volt/10`}>
+                                <ShareIcon size={19} />
+                                <span className="hidden sm:inline">Share</span>
                             </button>
 
                         </div>
@@ -300,27 +303,41 @@ export default function Post() {
 
                     {/* ================= AUTHOR CONTROLS ================= */}
                     {isAuthor && (
-                        <div className="flex gap-3 mt-5">
+                        <div className="flex gap-3 pb-5">
                             <Link
                                 to={`/edit-post/${post.$id}`}
-                                className="px-5 py-2 bg-green-600 rounded-full hover:bg-green-700"
+                                className="rounded-xl bg-volt px-5 py-2.5 text-sm font-semibold text-black hover:brightness-110 transition"
                             >
                                 Edit
                             </Link>
 
                             <button
                                 onClick={deletePost}
-                                className="px-5 py-2 bg-red-600 rounded-full hover:bg-red-700"
+                                className="rounded-xl border border-coral/40 px-5 py-2.5 text-sm font-semibold text-coral hover:bg-coral/10 transition"
                             >
                                 Delete
                             </button>
 
                         </div>
                     )}
-                    {/* ================= COMMENTS ================= */}
-                    <ShowComment/>
-
                 </div>
+                </article>
+
+                {/* ================= COMMENTS ================= */}
+                <div className="mt-6">
+                    <div className="mb-3 flex items-center justify-between px-1">
+                        <h3 className="font-display text-lg font-semibold text-white">Replies</h3>
+                        <button
+                            onClick={()=>setShowCommentBox(true)}
+                            className="rounded-xl bg-white/[0.05] px-4 py-2 text-sm font-medium text-zinc-200 hover:bg-volt hover:text-black transition"
+                        >
+                            + Add reply
+                        </button>
+                    </div>
+                    <ShowComment/>
+                </div>
+
+              </div>
             </Container>
             {showCommentBox && (<CommentBox post={post} onclose={()=>setShowCommentBox(false)} />)}
         </div>
