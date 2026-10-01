@@ -14,6 +14,7 @@ import { setCurrentPost } from "../store/postSlice";
 import { appwritelike, AppwriteLike } from "../appwrite/likeConfig";
 import { ArrowLeftIcon, CommentIcon, RepostIcon, HeartIcon, EyeIcon, ShareIcon, MoreIcon, VerifiedIcon, BookmarkIcon } from "../components/Icons";
 import { appwriteComment } from "../appwrite/commentConfig";
+//import { setComments } from "../store/commentSlice";
 
 export default function Post() {
     const [post, setPost] = useState(null);
@@ -91,6 +92,26 @@ export default function Post() {
     useEffect(() => {
         CountComments(slug);
     }, [slug])
+
+    
+    // const comments = useSelector((state) => state.comment.comments);
+    // useEffect(() => {
+    // if (!slug) return;
+    //     const fetchComment = async () => {
+    //     try {
+    //         const result = await appwriteComment.getComments(slug);
+    //         console.log("Comments", result.documents);
+    //         const length=result.documents.length;
+    //         setCommentCount(length);
+    //         dispatch(setComments(result.documents));
+    //     } catch (error) {
+    //         console.error("Failed to Fetch the comment", error);
+    //     }
+    // }
+
+    // fetchComment();
+    // }, [slug])
+    
 
     
     const userId = post?.userid;
