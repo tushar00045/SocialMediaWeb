@@ -14,7 +14,8 @@ function PostCard({
     userid,
     userName,
     likes,
-    createdAt
+    createdAt,
+    comments
 })
 {
     const profile = useSelector((state) => state.profile.profiles.find((prof) => prof.$id === userid));
@@ -135,7 +136,7 @@ function PostCard({
                         >
                             <CommentIcon size={17} />
                             <span>
-                                13
+                                {comments}
                             </span>
                         </button>
                         {/* Repost */}

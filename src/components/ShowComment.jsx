@@ -9,14 +9,14 @@ import { Link } from 'react-router-dom';
 import { setComments } from '../store/commentSlice';
 import { CommentIcon, RepostIcon, HeartIcon, EyeIcon, ShareIcon, BookmarkIcon, MoreIcon } from './Icons';
 import timeAgo from '../utils/timeAgo';
-function ShowComment() {
+function ShowComment({comments}) {
   const [profileImages, setProfileImages] = useState({});
     const { slug } = useParams();
 
     const dispatch = useDispatch();
 
-    const comments = useSelector((state) => state.comment.comments);
-
+    //const comments = useSelector((state) => state.comment.comments);
+/*
   useEffect(() => {
     if (!slug) return;
       const fetchComment = async () => {
@@ -32,7 +32,7 @@ function ShowComment() {
 
     fetchComment();
   }, [slug])
-
+*/
   // if (comments.length === 0) return;
 
     const profiles = useSelector((state) => state.profile.profiles);

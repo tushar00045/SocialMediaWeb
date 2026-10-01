@@ -94,6 +94,39 @@ export class Service{
       return null;
     }
   }
+
+  async incrementPostComments(slug) {
+    try {
+      const result = await this.databases.incrementDocumentAttribute({
+        databaseId: conf.appwriteDatabaseId,
+        collectionId: conf.appwriteCollectionId,
+        documentId: slug,
+        attribute: "comments",
+        value: 1
+      });
+      return result;
+
+    } catch (error) {
+      console.log("Appwrite service :: incrementPostComments :: error", error);
+      return null;
+    }
+  }
+  async decrementPostComments(slug) {
+    try {
+      const result = await this.databases.decrementDocumentAttribute({
+        databaseId: conf.appwriteDatabaseId,
+        collectionId: conf.appwriteCollectionId,
+        documentId: slug,
+        attribute: "comments",
+        value: 1
+      });
+      return result;
+
+    } catch (error) {
+      console.log("Appwrite service :: decrementPostComments :: error", error);
+      return null;
+    }
+  }
   
   async deletePost(slug) {
     try {

@@ -5,7 +5,8 @@ import profileAppwrite from "../appwrite/profileConfig";
 import { appwriteComment, AppwriteComment } from "../appwrite/commentConfig";
 import defaultProfileImage from '../assets/wolf69w-nature-10184389.jpg';
 import { CloseIcon, ImageIcon, SmileIcon, PollIcon, ClockIcon, PinIcon, FlagIcon } from "./Icons";
-function CommentBox({post,onclose}) {
+import appwriteService from "../appwrite/config";
+function CommentBox({post,onclose,onCommentAdded}) {
     const [comment, setComment] = useState("");
     const { register, handleSubmit,reset } = useForm();
     const userData = useSelector((state) => state.auth.userData);
@@ -50,16 +51,23 @@ function CommentBox({post,onclose}) {
 
             if (result) {
                 console.log("CommentedCreated:", result);
+                const updatePost = await appwriteService.incrementPostComments(post?.$id);
+                if (!updatePost) {
+                    console.log("comment created But Not Updated.");
+                }
+                onCommentAdded(result);
                 reset();
 
                 onclose();
             }
+
         }
         catch (error) {
             console.log("creation Post is failed.", error)
         }
     };
 
+  
     // display only: show post text without HTML tags in the preview
     const plainContent = post?.content?.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").trim();
 

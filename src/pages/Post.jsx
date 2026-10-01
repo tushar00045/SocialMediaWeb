@@ -13,6 +13,7 @@ import ShowComment from "../components/ShowComment";
 import { setCurrentPost } from "../store/postSlice";
 import { appwritelike, AppwriteLike } from "../appwrite/likeConfig";
 import { ArrowLeftIcon, CommentIcon, RepostIcon, HeartIcon, EyeIcon, ShareIcon, MoreIcon, VerifiedIcon, BookmarkIcon } from "../components/Icons";
+import { appwriteComment } from "../appwrite/commentConfig";
 
 export default function Post() {
     const [post, setPost] = useState(null);
@@ -20,6 +21,8 @@ export default function Post() {
     const [likesCount, setLikesCount] = useState(0);
     const [showCommentBox, setShowCommentBox] = useState(false);
     const [liked, setLiked] = useState(false);
+    const [comments, setComments] = useState([]);
+    const [commentCount, setCommentCount] = useState(0);
     const { slug } = useParams();
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -74,8 +77,22 @@ export default function Post() {
             setLiked(res?.documents?.some((l) => l.userId === userData.$id))
         );
     }, [slug, userData]);
-    
 
+    const CountComments = async () => {
+        console.log("commentCount function is working.");
+        const result = await appwriteComment.getComments(slug);
+        console.log(result);
+        setComments(result.documents);
+
+        const length = result.documents.length;
+        setCommentCount(length);
+    }
+
+    useEffect(() => {
+        CountComments(slug);
+    }, [slug])
+
+    
     const userId = post?.userid;
 
     const profile = useSelector((state) => state.profile.profiles.find((prof) => prof.$id === userId));
@@ -171,7 +188,7 @@ export default function Post() {
                 {/* Back */}
                 <button
                     onClick={() => navigate(-1)}
-                    className="mb-4 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/[0.05] transition"
+                    className="mb-4 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/5 transition"
                 >
                     <ArrowLeftIcon size={18} /> Back
                 </button>
@@ -183,7 +200,7 @@ export default function Post() {
                         {/* User */}
                         <div className="flex items-center gap-3">
 
-                            <div className="ring-gradient rounded-2xl p-[2px]">
+                            <div className="ring-gradient rounded-2xl p-0.5">
                                 <img
                                     src={profileImageUrl}
                                     alt="User"
@@ -216,11 +233,11 @@ export default function Post() {
                         {/* Right side */}
                         <div className="flex items-center gap-1 text-zinc-500">
 
-                            <button className="grid h-9 w-9 place-items-center rounded-xl hover:text-white hover:bg-white/[0.06] transition">
+                            <button className="grid h-9 w-9 place-items-center rounded-xl hover:text-white hover:bg-white/6 transition">
                                 <BookmarkIcon size={18} />
                             </button>
 
-                            <button className="grid h-9 w-9 place-items-center rounded-xl hover:text-white hover:bg-white/[0.06] transition">
+                            <button className="grid h-9 w-9 place-items-center rounded-xl hover:text-white hover:bg-white/6 transition">
                                 <MoreIcon size={20} />
                             </button>
 
@@ -285,7 +302,7 @@ export default function Post() {
                             <button onClick={()=>setShowCommentBox(true)} className={`${actionBtn} hover:text-iris hover:border-iris/40 hover:bg-iris/10`}>
                                 <CommentIcon size={19} />
                                 <span>
-                                    13
+                                    {commentCount}
                                 </span>
                             </button>
 
@@ -347,17 +364,20 @@ export default function Post() {
                         <h3 className="font-display text-lg font-semibold text-white">Replies</h3>
                         <button
                             onClick={()=>setShowCommentBox(true)}
-                            className="rounded-xl bg-white/[0.05] px-4 py-2 text-sm font-medium text-zinc-200 hover:bg-volt hover:text-black transition"
+                            className="rounded-xl bg-white/5 px-4 py-2 text-sm font-medium text-zinc-200 hover:bg-volt hover:text-black transition"
                         >
                             + Add reply
                         </button>
                     </div>
-                    <ShowComment/>
+                        <ShowComment comments={comments} />
                 </div>
 
               </div>
             </Container>
-            {showCommentBox && (<CommentBox post={post} onclose={()=>setShowCommentBox(false)} />)}
+            {showCommentBox && (<CommentBox post={post} onCommentAdded={(newComment) => {
+                setComments((prev) => [...prev, newComment])
+                setCommentCount((prev) => prev + 1);
+            }} onclose={()=>setShowCommentBox(false)} />)}
         </div>
     )
 }
