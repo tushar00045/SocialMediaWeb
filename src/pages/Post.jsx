@@ -19,6 +19,7 @@ export default function Post() {
     // const [profile, setProfile] = useState();
     const [likesCount, setLikesCount] = useState(0);
     const [showCommentBox, setShowCommentBox] = useState(false);
+    const [liked, setLiked] = useState(false);
     const { slug } = useParams();
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -42,6 +43,7 @@ export default function Post() {
     useEffect(() => {
         getPost();
     }, [slug]);
+
     useEffect(() => {
         if (!slug) return;
 
@@ -64,7 +66,15 @@ export default function Post() {
             else navigate("/");
         });
 
-    },[posts,slug,navigate,dispatch])
+    }, [posts, slug, navigate, dispatch])
+
+    useEffect(() => {
+        if (!slug || !userData) return;
+        appwritelike.getLikeUsers(slug).then((res) =>
+            setLiked(res?.documents?.some((l) => l.userId === userData.$id))
+        );
+    }, [slug, userData]);
+    
 
     const userId = post?.userid;
 
@@ -103,12 +113,15 @@ export default function Post() {
             if (!deleteLike) {
                 return;
             }
+            
+            setLiked(false);
 
             const updatePost = await appwriteService.decrementPostLikes(slug);
 
             if (updatePost) {
                 setLikesCount(updatePost.likes);
             }
+
         }
         else {
             //Add the Entry in the like collection
@@ -117,6 +130,8 @@ export default function Post() {
             if (!createLike) {
                 return;
             }
+            
+            setLiked(true);
 
             const updatePost = await appwriteService.incrementPostLikes(slug);
 
@@ -228,7 +243,7 @@ export default function Post() {
 
 
                     {/* ================= FEATURED IMAGE ================= */}
-                    <div className="w-full mb-4 overflow-hidden rounded-2xl border border-white/[0.06] bg-black/40">
+                    <div className="w-full mb-4 overflow-hidden rounded-2xl border border-white/6 bg-black/40">
                         <img
                             src={appwriteService.getFileView(
                                 post.featuredImage
@@ -241,7 +256,7 @@ export default function Post() {
 
                     {/* ================= DATE / VIEWS ================= */}
                     <div className="flex items-center gap-2 text-zinc-500 text-sm py-3">
-                        <span>8:34 PM · Aug 12, 2026</span>
+                        <span>{new Date(post.$createdAt).toLocaleString("en-IN")}</span>
                         <span className="h-1 w-1 rounded-full bg-zinc-600" />
                         <span className="text-zinc-200 font-semibold">
                             64.6K Views
@@ -250,13 +265,16 @@ export default function Post() {
 
 
                     {/* ================= ACTION BAR ================= */}
-                    <div className="border-t border-white/[0.06] py-4">
+                    <div className="border-t border-white/6 py-4">
 
                         <div className="flex flex-wrap items-center gap-2">
 
                             {/* Like */}
-                            <button onClick={()=>handleLikes(slug)} className={`${actionBtn} hover:text-coral hover:border-coral/40 hover:bg-coral/10`}>
-                                <HeartIcon size={19} />
+                            <button
+                                onClick={()=>handleLikes(slug)}
+                                className={`${actionBtn} hover:text-coral hover:border-coral/40 hover:bg-coral/10 ${liked ? "text-coral border-coral/40 bg-coral/10" : ""}`}
+                            >
+                                <HeartIcon size={19} fill={liked ? "currentColor" : "none"} />
                                 <span>
                                     {likesCount}
                                 </span>

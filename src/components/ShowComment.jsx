@@ -8,7 +8,7 @@ import { useSelector,useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { setComments } from '../store/commentSlice';
 import { CommentIcon, RepostIcon, HeartIcon, EyeIcon, ShareIcon, BookmarkIcon, MoreIcon } from './Icons';
-
+import timeAgo from '../utils/timeAgo';
 function ShowComment() {
   const [profileImages, setProfileImages] = useState({});
     const { slug } = useParams();
@@ -115,7 +115,7 @@ function ShowComment() {
                                     </span>
 
                                     <span className="text-zinc-600">
-                                        · 2h
+                                        · {timeAgo(comment.$createdAt)}
                                     </span>
 
                                     <button

@@ -41,6 +41,7 @@ function AllPost() {
                 userid={post.userid}
           userName={post.userName}
           likes={post.likes}
+          createdAt={post.$createdAt}
             />
         ))}
     </div>

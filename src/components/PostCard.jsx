@@ -5,7 +5,7 @@ import userImage from "../assets/wolf69w-nature-10184389.jpg";
 import { useSelector } from "react-redux";
 import profileAppwrite from "../appwrite/profileConfig";
 import { CommentIcon, RepostIcon, HeartIcon, EyeIcon, ShareIcon, MoreIcon, VerifiedIcon } from "./Icons";
-
+import timeAgo from "../utils/timeAgo";
 function PostCard({
     $id,
     title,
@@ -13,7 +13,8 @@ function PostCard({
     featuredImage,
     userid,
     userName,
-    likes
+    likes,
+    createdAt
 })
 {
     const profile = useSelector((state) => state.profile.profiles.find((prof) => prof.$id === userid));
@@ -58,7 +59,7 @@ function PostCard({
                                     ?.replace(/\s+/g, "_")
                                     .toLowerCase() || "user"}
                                 <span className="mx-1.5">·</span>
-                                Aug 12
+                               {timeAgo(createdAt)}
                             </span>
 
                         </div>
@@ -107,7 +108,7 @@ function PostCard({
                 {/* ================= DATE / VIEWS ================= */}
 
                 <div className="text-zinc-500 text-xs pb-3 flex items-center gap-2">
-                    <span>8:34 PM · Aug 12, 2026</span>
+                    <span>{new Date(createdAt).toLocaleString("en-IN")}</span>
                     <span className="h-1 w-1 rounded-full bg-zinc-600" />
                     <span className="text-zinc-300 font-medium">
                         64.6K Views
