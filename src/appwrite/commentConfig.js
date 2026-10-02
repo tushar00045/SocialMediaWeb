@@ -20,7 +20,8 @@ export class AppwriteComment {
     postId,
     Image,
     reply,
-    userName
+    userName,
+    likes
   }) {
     try {
       return await this.databases.createDocument({
@@ -32,7 +33,8 @@ export class AppwriteComment {
           postId,
           Image,
           reply,
-          userName
+          userName,
+          likes
         },
         permissions:[
           Permission.read(Role.any()),
@@ -64,6 +66,34 @@ export class AppwriteComment {
       );
 
       return null;
+    }
+  }
+
+  async incrementCommentLikes(commentId) {
+    try {
+      return await this.databases.incrementDocumentAttribute({
+        databaseId: conf.appwriteDatabaseId,
+        collectionId: conf.appwriteCollectionId3,
+        documentId: commentId,
+        attribute: "likes",
+        value: 1
+      });
+    } catch (error) {
+      console.log("Unable To Increment the likes on the comment.", error);
+    }
+  }
+
+  async decrementCommentLikes(commentId) {
+    try {
+      return await this.databases.decrementDocumentAttribute({
+        databaseId: conf.appwriteDatabaseId,
+        collectionId: conf.appwriteCollectionId3,
+        documentId: commentId,
+        attribute: "likes",
+        value: 1
+      });
+    } catch (error) {
+      console.log("Unable To decrement the comment Likes.", error);
     }
   }
 

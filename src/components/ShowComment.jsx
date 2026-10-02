@@ -7,12 +7,15 @@ import userImage from "../assets/wolf69w-nature-10184389.jpg";
 import { useSelector,useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { setComments } from '../store/commentSlice';
+import { AuthService } from '../appwrite/auth';
 import { CommentIcon, RepostIcon, HeartIcon, EyeIcon, ShareIcon, BookmarkIcon, MoreIcon } from './Icons';
 import timeAgo from '../utils/timeAgo';
+import { appwriteCommentLike } from '../appwrite/likeCommentConfig';
 function ShowComment({comments}) {
-  const [profileImages, setProfileImages] = useState({});
+    const [profileImages, setProfileImages] = useState({});
+    const [commentLikeCounts, setCommentLikesCounts] = useState({});
     const { slug } = useParams();
-
+    const [likedComments, setLikedComments] = useState({});
     const dispatch = useDispatch();
 
     //const comments = useSelector((state) => state.comment.comments);
@@ -36,6 +39,8 @@ function ShowComment({comments}) {
   // if (comments.length === 0) return;
 
     const profiles = useSelector((state) => state.profile.profiles);
+    
+    const userData = useSelector((state) => state.auth.userData);
 
     useEffect(() => {
         const fetchProfileImages = async () => {
@@ -66,6 +71,114 @@ function ShowComment({comments}) {
         fetchProfileImages();
 
     }, [comments, profiles]);
+ //
+    useEffect(() => {
+        const loadLikedComments = async () => {
+            if (!userData?.$id) return;
+
+            const likedState = {};
+
+            for (const comment of comments) {
+                const result =
+                    await appwriteCommentLike.getLikeUsers(comment.$id);
+
+                if (!result) continue;
+
+                likedState[comment.$id] =
+                    result.documents.some(
+                        (like) => like.userId === userData.$id
+                    );
+            }
+
+            setLikedComments(likedState);
+        };
+
+        loadLikedComments();
+    }, [comments, userData]);
+
+    const handleCommentLikes = async (commentId) => {
+        const result = await appwriteCommentLike.getLikeUsers(commentId);
+        console.log(result);
+
+        if (!result) {
+            return;
+        }
+
+        const alreadyLiked = result.documents.some((like) => like.userId === userData?.$id);
+
+        if (alreadyLiked) {
+            //delete the entry from the commmentlike collection
+            const deleteLike = await appwriteCommentLike.deleteLike({
+                commentId:commentId,userId:userData?.$id
+            })
+
+            if (!deleteLike) {
+                return;
+            }
+
+            setLikedComments((prev) => ({
+                ...prev,
+                [commentId]: false
+            }));
+
+            const updateComment = await appwriteComment.decrementCommentLikes(commentId);
+
+            if (updateComment) {
+                setCommentLikesCounts((prev) => ({
+                    ...prev,
+                    [commentId]:updateComment.likes
+                }))
+            }
+        }
+
+        else {
+            //Add the Entry in the Like Collection
+            const createLike = await appwriteCommentLike.createLike({
+                commentId: commentId, userId: userData?.$id
+            });
+
+            if (!createLike) {
+                return;
+            }
+
+            setLikedComments((prev) => ({
+                ...prev,
+                [commentId]: true
+            }));
+
+            const updateComment = await appwriteComment.incrementCommentLikes(commentId);
+
+            console.log("UPDATED COMMENT:", updateComment);
+            console.log("UPDATED LIKES:", updateComment?.likes);
+
+            if (updateComment) {
+                setCommentLikesCounts((prev) => ({
+                    ...prev,
+                    [commentId]:updateComment.likes
+                }))
+            }
+        }
+    }
+
+    // const handleShare = async () => {
+    //     console.log("share button is working.")
+    //     const shareUrl = window.location.href;
+
+    //     try {
+    //         if (navigator.share) {
+    //         await navigator.share({
+    //             title: post?.title,
+    //             text: "Check out this post!",
+    //             url: shareUrl,
+    //         });
+    //         } else {
+    //         await navigator.clipboard.writeText(shareUrl);
+    //         alert("Link copied!");
+    //         }
+    //     } catch (error) {
+    //         console.log("Share cancelled or failed:", error);
+    //     }
+    // };
 
   const act = "flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-zinc-500 transition";
 
@@ -164,10 +277,13 @@ function ShowComment({comments}) {
                                     text-sm
                                 ">
                                     {/* Like */}
-                                    <button className={`${act} hover:text-coral hover:bg-coral/10`}>
-                                        <HeartIcon size={16} />
+                                    <button
+                                        onClick={()=>handleCommentLikes(comment?.$id)}
+                                        className={`${act} hover:text-coral hover:border-coral/40 hover:bg-coral/10 ${likedComments[comment?.$id] ? "text-coral border-coral/40 bg-coral/10" : ""}`}
+                                    >
+                                        <HeartIcon size={19} fill={likedComments[comment?.$id] ? "currentColor" : "none"} />
                                         <span>
-                                            1
+                                            {commentLikeCounts[comment.$id] ?? comment.likes ?? 0}
                                         </span>
                                     </button>
                                     {/* Reply */}

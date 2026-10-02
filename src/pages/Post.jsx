@@ -159,7 +159,6 @@ export default function Post() {
             if (updatePost) {
                 setLikesCount(updatePost.likes);
             }
-
         }
         else {
             //Add the Entry in the like collection
