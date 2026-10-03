@@ -11,11 +11,14 @@ import { AuthService } from '../appwrite/auth';
 import { CommentIcon, RepostIcon, HeartIcon, EyeIcon, ShareIcon, BookmarkIcon, MoreIcon } from './Icons';
 import timeAgo from '../utils/timeAgo';
 import { appwriteCommentLike } from '../appwrite/likeCommentConfig';
+import ShowCommentReply from './ShowCommentReply';
+import CommentBox from './CommentBox';
 function ShowComment({comments}) {
     const [profileImages, setProfileImages] = useState({});
     const [commentLikeCounts, setCommentLikesCounts] = useState({});
     const { slug } = useParams();
     const [likedComments, setLikedComments] = useState({});
+    const [showCommentBox, setShowCommentBox] = useState(false);
     const dispatch = useDispatch();
 
     //const comments = useSelector((state) => state.comment.comments);
@@ -184,146 +187,148 @@ function ShowComment({comments}) {
 
   return (
      <div className="space-y-3 text-zinc-100">
-            {comments.length === 0 && (
-                <div className="rounded-3xl border border-dashed border-white/10 px-6 py-10 text-center text-zinc-500">
-                    No replies yet — start the conversation.
-                </div>
-            )}
-            {comments.map((comment) => {
-                return (
-                    <div
-                        key={comment.$id}
-                        className="surface w-full rounded-2xl px-4 py-4 animate-rise"
-                    >
-                        <div className="flex gap-3">
-                            {/* PROFILE IMAGE */}
-                            <img
-                                src={profileImages[comment.userId]|| userImage}
-                                alt={comment.userName}
-                                className="
-                                    w-10
-                                    h-10
-                                    rounded-xl
-                                    object-cover
-                                    shrink-0
-                                    bg-ink-800
-                                "
-                            />
-                            {/* COMMENT CONTENT */}
-                            <div className="flex-1 min-w-0">
-                                {/* USER INFORMATION */}
-                                <div className="flex items-center gap-2 text-sm">
+        {comments.length === 0 && (
+            <div className="rounded-3xl border border-dashed border-white/10 px-6 py-10 text-center text-zinc-500">
+                No replies yet — start the conversation.
+            </div>
+        )}
+        {comments.map((comment) => {
+            return (
+                <div
+                    key={comment.$id}
+                    className="surface w-full rounded-2xl px-4 py-4 animate-rise"
+                >
+                    <div className="flex gap-3">
+                        {/* PROFILE IMAGE */}
+                        <img
+                            src={profileImages[comment.userId]|| userImage}
+                            alt={comment.userName}
+                            className="
+                                w-10
+                                h-10
+                                rounded-xl
+                                object-cover
+                                shrink-0
+                                bg-ink-800
+                            "
+                        />
+                        {/* COMMENT CONTENT */}
+                        <div className="flex-1 min-w-0">
+                            {/* USER INFORMATION */}
+                            <div className="flex items-center gap-2 text-sm">
 
-                                    <Link
-                                        to={`/profile/${comment.userId}`}
-                                        className="font-semibold text-white hover:text-volt transition-colors"
-                                    >
-                                        {comment.userName}
-                                    </Link>
+                                <Link
+                                    to={`/profile/${comment.userId}`}
+                                    className="font-semibold text-white hover:text-volt transition-colors"
+                                >
+                                    {comment.userName}
+                                </Link>
 
-                                    <span className="text-zinc-500 truncate">
-                                        @{comment.userName
-                                            ?.replace(/\s+/g, "_")
-                                            .toLowerCase()}
+                                <span className="text-zinc-500 truncate">
+                                    @{comment.userName
+                                        ?.replace(/\s+/g, "_")
+                                        .toLowerCase()}
+                                </span>
+
+                                <span className="text-zinc-600">
+                                    · {timeAgo(comment.$createdAt)}
+                                </span>
+
+                                <button
+                                    className="
+                                        ml-auto
+                                        grid h-8 w-8 place-items-center rounded-lg
+                                        text-zinc-500
+                                        hover:text-white hover:bg-white/6
+                                    "
+                                >
+                                    <MoreIcon size={18} />
+                                </button>
+
+                            </div>
+                            {/* COMMENT TEXT */}
+
+                            {comment.reply && (
+                                <p className="mt-1 text-zinc-200 text-[15px] leading-6 text-left whitespace-pre-wrap wrap-break-words">
+                                    {comment.reply}
+                                </p>
+                            )}
+                            {/* COMMENT IMAGE */}
+                            {comment.Image && (
+                                <img
+                                    src={appwriteComment.getFileView(comment.Image)}
+                                    alt="Comment"
+                                    className="
+                                        mt-3
+                                        w-full
+                                        max-w-md
+                                        max-h-80
+                                        rounded-xl
+                                        object-cover
+                                        border border-white/6
+                                    "
+                                />
+
+                            )}
+                            {/* ACTION BAR */}
+                            <div className="
+                                flex
+                                items-center
+                                gap-1
+                                mt-3
+                                -ml-2
+                                text-sm
+                            ">
+                                {/* Like */}
+                                <button
+                                    onClick={()=>handleCommentLikes(comment?.$id)}
+                                    className={`${act} hover:text-coral hover:border-coral/40 hover:bg-coral/10 ${likedComments[comment?.$id] ? "text-coral border-coral/40 bg-coral/10" : ""}`}
+                                >
+                                    <HeartIcon size={19} fill={likedComments[comment?.$id] ? "currentColor" :
+                                    "none"}
+                                    className={likedComments[comment?.$id] ? "text-coral" : ""}/>
+                                    <span>
+                                        {commentLikeCounts[comment.$id] ?? comment.likes ?? 0}
                                     </span>
-
-                                    <span className="text-zinc-600">
-                                        · {timeAgo(comment.$createdAt)}
+                                </button>
+                                {/* Reply */}
+                                <button onClick={()=>setShowCommentBox(true)} className={`${act} hover:text-iris hover:bg-iris/10`}>
+                                    <CommentIcon size={16} />
+                                    <span>
+                                        1
                                     </span>
+                                </button>
+                                {/* Repost */}
+                                <button className={`${act} hover:text-volt hover:bg-volt/10`}>
+                                    <RepostIcon size={16} />
+                                </button>
+                                {/* Views */}
+                                <button className={`${act} hover:text-white`}>
+                                    <EyeIcon size={16} />
+                                    <span>
+                                        86
+                                    </span>
+                                </button>
 
-                                    <button
-                                        className="
-                                            ml-auto
-                                            grid h-8 w-8 place-items-center rounded-lg
-                                            text-zinc-500
-                                            hover:text-white hover:bg-white/6
-                                        "
-                                    >
-                                        <MoreIcon size={18} />
+                                <div className="ml-auto flex items-center gap-1">
+                                    {/* Bookmark */}
+                                    <button className={`${act} hover:text-white hover:bg-white/6`}>
+                                        <BookmarkIcon size={16} />
                                     </button>
 
-                                </div>
-                                {/* COMMENT TEXT */}
-
-                                {comment.reply && (
-                                    <p className="mt-1 text-zinc-200 text-[15px] leading-6 text-left whitespace-pre-wrap wrap-break-words">
-                                        {comment.reply}
-                                    </p>
-                                )}
-                                {/* COMMENT IMAGE */}
-                                {comment.Image && (
-                                    <img
-                                        src={appwriteComment.getFileView(comment.Image)}
-                                        alt="Comment"
-                                        className="
-                                            mt-3
-                                            w-full
-                                            max-w-md
-                                            max-h-80
-                                            rounded-xl
-                                            object-cover
-                                            border border-white/6
-                                        "
-                                    />
-
-                                )}
-                                {/* ACTION BAR */}
-                                <div className="
-                                    flex
-                                    items-center
-                                    gap-1
-                                    mt-3
-                                    -ml-2
-                                    text-sm
-                                ">
-                                    {/* Like */}
-                                    <button
-                                        onClick={()=>handleCommentLikes(comment?.$id)}
-                                        className={`${act} hover:text-coral hover:border-coral/40 hover:bg-coral/10 ${likedComments[comment?.$id] ? "text-coral border-coral/40 bg-coral/10" : ""}`}
-                                    >
-                                        <HeartIcon size={19} fill={likedComments[comment?.$id] ? "currentColor" :
-                                        "none"}
-                                        className={likedComments[comment?.$id] ? "text-coral" : ""}/>
-                                        <span>
-                                            {commentLikeCounts[comment.$id] ?? comment.likes ?? 0}
-                                        </span>
-                                    </button>
-                                    {/* Reply */}
-                                    <button className={`${act} hover:text-iris hover:bg-iris/10`}>
-                                        <CommentIcon size={16} />
-                                        <span>
-                                            1
-                                        </span>
-                                    </button>
-                                    {/* Repost */}
+                                    {/* Share */}
                                     <button className={`${act} hover:text-volt hover:bg-volt/10`}>
-                                        <RepostIcon size={16} />
+                                        <ShareIcon size={16} />
                                     </button>
-                                    {/* Views */}
-                                    <button className={`${act} hover:text-white`}>
-                                        <EyeIcon size={16} />
-                                        <span>
-                                            86
-                                        </span>
-                                    </button>
-
-                                    <div className="ml-auto flex items-center gap-1">
-                                        {/* Bookmark */}
-                                        <button className={`${act} hover:text-white hover:bg-white/6`}>
-                                            <BookmarkIcon size={16} />
-                                        </button>
-
-                                        {/* Share */}
-                                        <button className={`${act} hover:text-volt hover:bg-volt/10`}>
-                                            <ShareIcon size={16} />
-                                        </button>
-                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                );
-          })}
+                    <ShowCommentReply commentId={comment.$id} />
+                </div>
+            );
+            { showCommentBox && (<CommentBox comment={ comment } onclose={setShowCommentBox(false)})}
+        })}
     </div>
   )
 }
