@@ -43,7 +43,7 @@ export class AppwriteComment {
         ]
       });
     } catch (error) {
-      console.log("Appwrite service :: createPost :: error", error);
+      console.log("Appwrite service :: createComment:: error", error);
       throw error;
     }
   }
