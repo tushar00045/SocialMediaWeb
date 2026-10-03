@@ -311,7 +311,8 @@ export default function Post() {
                                 onClick={()=>handleLikes(slug)}
                                 className={`${actionBtn} hover:text-coral hover:border-coral/40 hover:bg-coral/10 ${liked ? "text-coral border-coral/40 bg-coral/10" : ""}`}
                             >
-                                <HeartIcon size={19} fill={liked ? "currentColor" : "none"} />
+                                        <HeartIcon size={19} fill={liked ? "currentColor" : "none"}
+                                className={liked? "text-coral" : ""}        />
                                 <span>
                                     {likesCount}
                                 </span>

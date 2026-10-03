@@ -281,7 +281,9 @@ function ShowComment({comments}) {
                                         onClick={()=>handleCommentLikes(comment?.$id)}
                                         className={`${act} hover:text-coral hover:border-coral/40 hover:bg-coral/10 ${likedComments[comment?.$id] ? "text-coral border-coral/40 bg-coral/10" : ""}`}
                                     >
-                                        <HeartIcon size={19} fill={likedComments[comment?.$id] ? "currentColor" : "none"} />
+                                        <HeartIcon size={19} fill={likedComments[comment?.$id] ? "currentColor" :
+                                        "none"}
+                                        className={likedComments[comment?.$id] ? "text-coral" : ""}/>
                                         <span>
                                             {commentLikeCounts[comment.$id] ?? comment.likes ?? 0}
                                         </span>
