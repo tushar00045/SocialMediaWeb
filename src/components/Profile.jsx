@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import appwriteService from '../appwrite/config';
 import EditProfile from './EditProfile';
-import profileAppwrite from '../appwrite/profileConfig';
+import {profileAppwrite }from '../appwrite/profileConfig';
 import defaultCoverImage from '../assets/jplenio-nature-3082832_1920.jpg';
 import defaultProfileImage from '../assets/wolf69w-nature-10184389.jpg';
 import { setCurrentProfile, addProfile } from '../store/profileSlice';

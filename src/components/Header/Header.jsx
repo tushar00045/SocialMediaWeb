@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { Logo } from '../index'
 import authService from '../../appwrite/auth'
 import { logout } from '../../store/authSlice'
-import profileAppwrite from '../../appwrite/profileConfig'
+import {profileAppwrite} from '../../appwrite/profileConfig'
 import defaultProfileImage from '../../assets/wolf69w-nature-10184389.jpg'
 import { HomeIcon, GridIcon, PlusIcon, UserIcon, LogoutIcon, LoginIcon, SparkIcon } from '../Icons'
 

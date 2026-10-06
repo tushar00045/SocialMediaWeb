@@ -2,12 +2,10 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { ChevronDown, ChevronUp } from "lucide-react";
-
-// TODO: change these two imports to your real Appwrite services
-import { AppwriteComment as commentService} from "../appwrite/commentConfig"; // must have getReplies(commentId)
-
 import defaultAvatar from "../assets/wolf69w-nature-10184389.jpg";
-
+import { appwriteReply } from "../appwrite/commentReply";
+import { profileAppwrite } from "../appwrite/profileConfig";
+import { useEffect } from "react";
 /**
  * Shows a "View replies" button under a comment.
  * Click once -> loads and shows the replies. Click again -> hides them.
@@ -15,7 +13,7 @@ import defaultAvatar from "../assets/wolf69w-nature-10184389.jpg";
  * Props:
  *  - commentId : $id of the parent comment
  */
-function ShowCommentReply({ commentId }) {
+function ShowCommentReply({commentId,refresh}) {
   const [open, setOpen] = useState(false);
   const [replies, setReplies] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -23,7 +21,7 @@ function ShowCommentReply({ commentId }) {
   const [error, setError] = useState("");
 
   const profiles = useSelector((state) => state.profile.profiles);
-
+/*
   const handleToggle = async () => {
     // hide
     if (open) {
@@ -38,7 +36,7 @@ function ShowCommentReply({ commentId }) {
     setLoading(true);
     setError("");
     try {
-      const res = await commentService.getReplys(commentId);
+      const res = await appwriteReply.getReplys(commentId);
       setReplies(res?.documents || []);
       setLoaded(true);
     } catch (err) {
@@ -48,11 +46,39 @@ function ShowCommentReply({ commentId }) {
       setLoading(false);
     }
   };
+*/
+  
+  const handleToggle = () => {
+    setOpen((prev) => !prev);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+
+    const fetchReplies = async () => {
+      setLoading(true);
+      setError("");
+
+      try {
+        const res = await appwriteReply.getReplys(commentId);
+
+        setReplies(res?.documents || []);
+        setLoaded(true);
+      } catch (err) {
+        console.error("Failed to fetch replies", err);
+        setError("Couldn't load replies. Try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReplies();
+  }, [open, refresh, commentId]);
 
   const getAvatar = (userId) => {
     const profile = profiles?.find((p) => p.$id === userId);
     return profile?.profileImage
-      ? profileService.getFileView(profile.profileImage)
+      ? profileAppwrite.getFileView(profile.profileImage)
       : defaultAvatar;
   };
 
@@ -125,7 +151,7 @@ function ShowCommentReply({ commentId }) {
 
                 {reply.Image && (
                   <img
-                    src={commentService.getFileView(reply.Image)}
+                    src={appwriteReply.getFileView(reply.Image)}
                     alt="Reply"
                     className="mt-3 max-h-72 w-full max-w-sm rounded-xl border border-white/6 object-cover"
                   />

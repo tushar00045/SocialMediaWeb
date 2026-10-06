@@ -19,10 +19,10 @@ export class AppwriteCommentReply{
         collectionId: conf.appwriteCollectionId7,
         documentId: ID.unique(),
         data: {
+          commentId,
           userId,
           reply,
           userName,
-          commentId
         }
       })
     } catch (error) {
@@ -32,13 +32,15 @@ export class AppwriteCommentReply{
 
   async getReplys(commentId) {
     try {
-      return await this.databases.listDocuments({
+      const result= await this.databases.listDocuments({
         databaseId: conf.appwriteDatabaseId,
         collectionId: conf.appwriteCollectionId7,
         queries: [
           Query.equal("commentId", commentId)
         ]
       });
+      console.log(result);
+      return result;
     } catch (error) {
       console.log("Unable to featch the comment.", error);
     }

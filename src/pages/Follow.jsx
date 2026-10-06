@@ -1,6 +1,6 @@
 import React, { useState,useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
-import profileAppwrite from '../appwrite/profileConfig';
+import {profileAppwrite} from '../appwrite/profileConfig';
 import AppwriteService from "../appwrite/config";
 import { useSelector } from 'react-redux';
 import followAppwrite from '../appwrite/followConfig';

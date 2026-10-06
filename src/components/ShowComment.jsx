@@ -2,7 +2,7 @@ import React from 'react'
 import { useState, useEffect } from "react"
 import { useParams } from 'react-router-dom';
 import { appwriteComment } from "../appwrite/commentConfig";
-import profileAppwrite from '../appwrite/profileConfig';
+import {profileAppwrite} from '../appwrite/profileConfig';
 import userImage from "../assets/wolf69w-nature-10184389.jpg";
 import { useSelector,useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -12,13 +12,16 @@ import { CommentIcon, RepostIcon, HeartIcon, EyeIcon, ShareIcon, BookmarkIcon, M
 import timeAgo from '../utils/timeAgo';
 import { appwriteCommentLike } from '../appwrite/likeCommentConfig';
 import ShowCommentReply from './ShowCommentReply';
-import CommentBox from './CommentBox';
+import CommentBox2 from './commentBox2';
+import { appwriteReply } from '../appwrite/commentReply';
 function ShowComment({comments}) {
     const [profileImages, setProfileImages] = useState({});
     const [commentLikeCounts, setCommentLikesCounts] = useState({});
     const { slug } = useParams();
     const [likedComments, setLikedComments] = useState({});
     const [showCommentBox, setShowCommentBox] = useState(false);
+    const [replyingTo, setReplyingTo] = useState(null);
+    const [replyRefresh, setReplyRefresh] = useState({});
     const dispatch = useDispatch();
 
     //const comments = useSelector((state) => state.comment.comments);
@@ -278,7 +281,7 @@ function ShowComment({comments}) {
                                 mt-3
                                 -ml-2
                                 text-sm
-                            ">
+                                ">
                                 {/* Like */}
                                 <button
                                     onClick={()=>handleCommentLikes(comment?.$id)}
@@ -292,7 +295,7 @@ function ShowComment({comments}) {
                                     </span>
                                 </button>
                                 {/* Reply */}
-                                <button onClick={()=>setShowCommentBox(true)} className={`${act} hover:text-iris hover:bg-iris/10`}>
+                                <button onClick={()=>setReplyingTo(comment)} className={`${act} hover:text-iris hover:bg-iris/10`}>
                                     <CommentIcon size={16} />
                                     <span>
                                         1
@@ -322,13 +325,25 @@ function ShowComment({comments}) {
                                     </button>
                                 </div>
                             </div>
+                            <ShowCommentReply commentId={comment.$id} refresh={replyRefresh[comment.$id] || 0} />
                         </div>
                     </div>
-                    <ShowCommentReply commentId={comment.$id} />
                 </div>
             );
-            { showCommentBox && (<CommentBox comment={ comment } onclose={setShowCommentBox(false)})}
-        })}
+        })}      
+        {replyingTo && (<CommentBox2
+                comment={replyingTo}
+              onCommentAdded={(newReply) => {
+                  const parentId = replyingTo?.$id;
+                  setReplyRefresh((prev) => ({
+                      ...prev,
+                      [parentId]: (prev[parentId] || 0) + 1
+                  }));
+                  setReplyingTo(null);
+                }}
+                onclose={() => setReplyingTo(null)}
+            />
+        )}
     </div>
   )
 }

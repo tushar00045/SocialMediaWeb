@@ -3,7 +3,7 @@ import appwriteService from "../appwrite/config";
 import { Link } from "react-router-dom";
 import userImage from "../assets/wolf69w-nature-10184389.jpg";
 import { useSelector } from "react-redux";
-import profileAppwrite from "../appwrite/profileConfig";
+import {profileAppwrite} from "../appwrite/profileConfig";
 import { CommentIcon, RepostIcon, HeartIcon, EyeIcon, ShareIcon, MoreIcon, VerifiedIcon } from "./Icons";
 import timeAgo from "../utils/timeAgo";
 function PostCard({

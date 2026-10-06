@@ -156,6 +156,4 @@ export class ProfileAppwrite {
   }
 }
 
-const profileAppwrite = new ProfileAppwrite();
-
-export default profileAppwrite;
+export const profileAppwrite = new ProfileAppwrite();

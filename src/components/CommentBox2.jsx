@@ -6,50 +6,50 @@ import { appwriteComment, AppwriteComment } from "../appwrite/commentConfig";
 import defaultProfileImage from '../assets/wolf69w-nature-10184389.jpg';
 import { CloseIcon, ImageIcon, SmileIcon, PollIcon, ClockIcon, PinIcon, FlagIcon } from "./Icons";
 import appwriteService from "../appwrite/config";
+import { appwriteReply } from "../appwrite/commentReply";
 import timeAgo from "../utils/timeAgo";
-function CommentBox({post,onclose,onCommentAdded}) {
-    const [comment, setComment] = useState("");
+function CommentBox2({comment,onclose,onCommentAdded}) {
+    //const [comment, setComment] = useState("");
     const { register, handleSubmit,reset } = useForm();
     const userData = useSelector((state) => state.auth.userData);
-    const userId = userData?.$id;
-    const postId = post.userid//on which post we want to comment
-    console.log(userId)
-    console.log(postId);
+    const uId = userData?.$id;
+    const commentId = comment?.$id//on which comment we want to reply
+    console.log(uId)
+    console.log(commentId);
 
     const profiles = useSelector((state) => state.profile.profiles);
     // profile of who wrote the comment
-    const profile = profiles.find((prof) => prof.$id === userId);
+    const profile = profiles.find((prof) => prof.$id === uId);
 
 
     // whom post Is commented
-    const profile2 = profiles.find((prof)=>prof.$id===postId)
+    const profile2 = profiles.find((prof)=>prof.$id===comment?.userId)
 
 
-    const postOwnerProfileImage=profile2?.profileImage ? profileAppwrite.getFileView(profile2.profileImage) : defaultProfileImage;
+    const commentOwnerProfileImage=profile2?.profileImage ? profileAppwrite.getFileView(profile2.profileImage) : defaultProfileImage;
     const userProfileImage = profile?.profileImage ? profileAppwrite.getFileView(profile.profileImage) : defaultProfileImage;
 
 
-    const replyPost = async (data) => {
+    const replyComment = async (data) => {
         try {
-            let ImageId = null;
-            const imageFile = data.Image?.[0];
-            if (imageFile) {
-                const uploadImage = await appwriteComment.uploadFile(imageFile);
-                ImageId = uploadImage.$id;
-            }
 
             console.log("comment:", comment);
             console.log(userData?.$id)
-            console.log("Post ID:", post?.$id);
+            console.log("Comment ID:", commentId);
 
-            const result = await appwriteComment.createComment({
+            const result = await appwriteReply.createReply({
+                commentId: commentId,
                 userId: userData?.$id,
-                postId: post?.$id,
-                Image: ImageId,
                 reply: data?.reply,
                 userName: userData?.name,
             })
-
+          
+          if (result) {
+            onCommentAdded(result)
+            reset();
+            onclose();
+          }
+/*
             if (result) {
                 console.log("CommentedCreated:", result);
                 const updatePost = await appwriteService.incrementPostComments(post?.$id);
@@ -61,6 +61,7 @@ function CommentBox({post,onclose,onCommentAdded}) {
 
                 onclose();
             }
+            */
 
         }
         catch (error) {
@@ -70,12 +71,12 @@ function CommentBox({post,onclose,onCommentAdded}) {
 
   
     // display only: show post text without HTML tags in the preview
-    const plainContent = post?.content?.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").trim();
+    const plainContent = comment?.reply?.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").trim();
 
     const tool = "grid h-10 w-10 place-items-center rounded-xl text-zinc-500 hover:text-volt hover:bg-volt/10 transition";
 
     return (
-      <form onSubmit={handleSubmit(replyPost)} >
+      <form onSubmit={handleSubmit(replyComment)} >
         <div className="fixed inset-0 z-50 flex items-end sm:items-start justify-center bg-black/70 backdrop-blur-sm sm:pt-16">
             {/* ================= MODAL ================= */}
             <div
@@ -117,26 +118,26 @@ function CommentBox({post,onclose,onCommentAdded}) {
                         {/* PROFILE IMAGE */}
                         <div className="flex flex-col items-center">
                             <img
-                            src={postOwnerProfileImage}
+                            src={commentOwnerProfileImage}
                                 alt="Profile"
                                 className="w-11 h-11 rounded-[14px] object-cover bg-ink-800"
                             />
                             <span className="mt-2 w-0.5 flex-1 rounded-full bg-linear-to-b from-iris/60 to-transparent" />
                         </div>
-                        {/* POST */}
+                        {/* Comment */}
                         <div className="flex-1 min-w-0 pb-4">
                             <div className="flex items-center gap-2 text-sm">
 
                                 <span className="font-semibold text-white">
-                                    {post?.userName || "User"}
+                                    {comment?.userName || "User"}
                                 </span>
 
                                 <span className="text-zinc-500">
-                                    @{post?.userName?.replace(/\s+/g, "_").toLowerCase()}
+                                    @{comment?.userName?.replace(/\s+/g, "_").toLowerCase()}
                                 </span>
 
                                 <span className="text-zinc-600">
-                                    · {timeAgo(post.$createdAt)}
+                                    · {timeAgo(comment.$createdAt)}
                                 </span>
 
                             </div>
@@ -149,7 +150,7 @@ function CommentBox({post,onclose,onCommentAdded}) {
                             <p className="mt-3 inline-flex items-center gap-1 rounded-full bg-white/4 px-3 py-1 text-xs text-zinc-400">
                                 Replying to{" "}
                                 <span className="text-volt font-medium">
-                                    @{post?.userName?.replace(/\s+/g, "_").toLowerCase()}
+                                    @{comment?.userName?.replace(/\s+/g, "_").toLowerCase()}
                                 </span>
                             </p>
                         </div>
@@ -262,4 +263,4 @@ function CommentBox({post,onclose,onCommentAdded}) {
     );
 }
 
-export default CommentBox;
+export default CommentBox2;

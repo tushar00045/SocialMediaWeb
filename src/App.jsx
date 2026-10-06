@@ -5,7 +5,7 @@ import authService from './appwrite/auth';
 import { login, logout } from "./store/authSlice"
 import { Header, Footer } from "./components/index"
 import { Outlet } from 'react-router-dom';
-import profileAppwrite from './appwrite/profileConfig';
+import {profileAppwrite} from './appwrite/profileConfig';
 import { setprofiles } from './store/profileSlice';
 function App() {
   const [loading, setLoading] = useState(true)

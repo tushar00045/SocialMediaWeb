@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useForm } from 'react-hook-form';
-import profileAppwrite from '../appwrite/profileConfig';
+import {profileAppwrite} from '../appwrite/profileConfig';
 import { CloseIcon, CameraIcon } from './Icons';
 
 function EditProfile({ onClose }) {

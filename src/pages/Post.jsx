@@ -7,7 +7,7 @@ import { useSelector } from "react-redux";
 import userImage from "../assets/wolf69w-nature-10184389.jpg"
 import { useDispatch } from "react-redux";
 import authService from "../appwrite/auth";
-import profileAppwrite from "../appwrite/profileConfig";
+import {profileAppwrite} from "../appwrite/profileConfig";
 import CommentBox from "../components/CommentBox";
 import ShowComment from "../components/ShowComment";
 import { setCurrentPost } from "../store/postSlice";
