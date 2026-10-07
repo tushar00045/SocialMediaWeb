@@ -22,27 +22,32 @@ function ShowComment({comments}) {
     const [showCommentBox, setShowCommentBox] = useState(false);
     const [replyingTo, setReplyingTo] = useState(null);
     const [replyRefresh, setReplyRefresh] = useState({});
+    const [replyCount, setReplyCount] = useState({});
     const dispatch = useDispatch();
-
-    //const comments = useSelector((state) => state.comment.comments);
-/*
-  useEffect(() => {
-    if (!slug) return;
-      const fetchComment = async () => {
-        try {
-          const result = await appwriteComment.getComments(slug)
-
-          console.log("Comments", result.documents);
-          dispatch(setComments(result.documents));
-        } catch (error) {
-          console.error("Failed to Fetch the comment", error);
+    
+    const handleReplyCount = async (commentId) => {
+        const result = await appwriteReply.getReplys(commentId);
+        
+        if (!result) {
+            return;
         }
+        console.log(result.documents);
+        console.log(result.documents.length);
+        setReplyCount((prev) => ({
+            ...prev, [commentId]: result.documents.length
+        }));
     }
 
-    fetchComment();
-  }, [slug])
-*/
-  // if (comments.length === 0) return;
+    useEffect(() => {
+        if (!comments.length) {
+            return;
+        }
+        comments.forEach((comment) => { 
+            handleReplyCount(comment?.$id);
+        });
+    }, [comments]);
+
+
 
     const profiles = useSelector((state) => state.profile.profiles);
     
@@ -186,7 +191,7 @@ function ShowComment({comments}) {
     //     }
     // };
 
-  const act = "flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-zinc-500 transition";
+    const act = "flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-zinc-500 transition";
 
   return (
      <div className="space-y-3 text-zinc-100">
@@ -298,7 +303,7 @@ function ShowComment({comments}) {
                                 <button onClick={()=>setReplyingTo(comment)} className={`${act} hover:text-iris hover:bg-iris/10`}>
                                     <CommentIcon size={16} />
                                     <span>
-                                        1
+                                        {replyCount[comment.$id] || 0}
                                     </span>
                                 </button>
                                 {/* Repost */}
@@ -338,6 +343,10 @@ function ShowComment({comments}) {
                   setReplyRefresh((prev) => ({
                       ...prev,
                       [parentId]: (prev[parentId] || 0) + 1
+                  }));
+                  setReplyCount((prev) => ({
+                      ...prev,
+                    [parentId]: (prev[parentId] || 0) + 1
                   }));
                   setReplyingTo(null);
                 }}

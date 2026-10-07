@@ -2,7 +2,7 @@ import React, { useState ,useEffect} from "react";
 import { useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import {profileAppwrite} from "../appwrite/profileConfig";
-import { appwriteComment, AppwriteComment } from "../appwrite/commentConfig";
+import { appwriteComment } from "../appwrite/commentConfig";
 import defaultProfileImage from '../assets/wolf69w-nature-10184389.jpg';
 import { CloseIcon, ImageIcon, SmileIcon, PollIcon, ClockIcon, PinIcon, FlagIcon } from "./Icons";
 import appwriteService from "../appwrite/config";
@@ -32,7 +32,6 @@ function CommentBox2({comment,onclose,onCommentAdded}) {
 
     const replyComment = async (data) => {
         try {
-
             console.log("comment:", comment);
             console.log(userData?.$id)
             console.log("Comment ID:", commentId);
@@ -42,30 +41,30 @@ function CommentBox2({comment,onclose,onCommentAdded}) {
                 userId: userData?.$id,
                 reply: data?.reply,
                 userName: userData?.name,
-            })
+            });
+
+            console.log(result);
           
-          if (result) {
-            onCommentAdded(result)
-            reset();
-            onclose();
-          }
-/*
             if (result) {
-                console.log("CommentedCreated:", result);
-                const updatePost = await appwriteService.incrementPostComments(post?.$id);
-                if (!updatePost) {
-                    console.log("comment created But Not Updated.");
+                console.log("Reply created.", result);
+                const updateComment =
+                    await appwriteComment.incrementReplyCount(commentId);
+
+                console.log("INCREMENT RESULT:", updateComment);
+
+                if (!updateComment) {
+                    console.log("Reply created but count update FAILED");
+                } else {
+                    console.log("Reply count updated in Appwrite:");
+                    console.log("New count:", updateComment.replies);
                 }
-                onCommentAdded(result);
+                onCommentAdded(result)
                 reset();
-
                 onclose();
-            }
-            */
-
+          }
         }
         catch (error) {
-            console.log("creation Post is failed.", error)
+            console.log("creation reply is failed.", error)
         }
     };
 
@@ -262,5 +261,4 @@ function CommentBox2({comment,onclose,onCommentAdded}) {
       </form>
     );
 }
-
 export default CommentBox2;

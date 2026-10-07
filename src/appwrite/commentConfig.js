@@ -21,7 +21,8 @@ export class AppwriteComment {
     Image,
     reply,
     userName,
-    likes
+    likes,
+    commentCount
   }) {
     try {
       return await this.databases.createDocument({
@@ -34,7 +35,8 @@ export class AppwriteComment {
           Image,
           reply,
           userName,
-          likes
+          likes,
+          commentCount
         },
         permissions:[
           Permission.read(Role.any()),
@@ -94,6 +96,34 @@ export class AppwriteComment {
       });
     } catch (error) {
       console.log("Unable To decrement the comment Likes.", error);
+    }
+  }
+
+  async incrementReplyCount(commentId) {
+    console.log("Increment Function Is working.");
+    try {
+      return await this.databases.incrementDocumentAttribute({
+        databaseId: conf.appwriteDatabaseId,
+        collectionId: conf.appwriteCollectionId3,
+        documentId: commentId,
+        attribute: "commentCount",
+        value: 1
+      });
+    } catch (error) {
+      console.log("Unable to Increment of the Comment Count.", error);
+    }
+  }
+  async decrementReplyCount(commentId) {
+    try {
+      return await this.databases.decrementDocumentAttribute({
+        databaseId: conf.appwriteDatabaseId,
+        collectionId: conf.appwriteCollectionId3,
+        documentId: commentId,
+        attribute: "commentCount",
+        value: 1
+      });
+    } catch (error) {
+      console.log("Unable to decrement of the Comment Count.", error);
     }
   }
 
