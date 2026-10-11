@@ -296,7 +296,7 @@ export default function Post() {
                         <span>{new Date(post.$createdAt).toLocaleString("en-IN")}</span>
                         <span className="h-1 w-1 rounded-full bg-zinc-600" />
                         <span className="text-zinc-200 font-semibold">
-                            64.6K Views
+                            {post.viewCount}
                         </span>
                     </div>
 
@@ -341,7 +341,7 @@ export default function Post() {
                             <button className={`${actionBtn} hover:text-white`}>
                                 <EyeIcon size={19} />
                                 <span>
-                                    1.6K
+                                    {post.viewCount}
                                 </span>
                             </button>
 

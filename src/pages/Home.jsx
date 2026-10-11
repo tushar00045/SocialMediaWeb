@@ -104,6 +104,7 @@ function Home() {
             likes={f.likes}
             createdAt={f.$createdAt}
             comments={f.comments}
+            viewCount={f.viewCount}
             />
         ))}
     </div>

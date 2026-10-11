@@ -121,10 +121,24 @@ export class Service{
         value: 1
       });
       return result;
-
     } catch (error) {
       console.log("Appwrite service :: decrementPostComments :: error", error);
       return null;
+    }
+  }
+
+  async incrementPostViews(slug) {
+    try {
+      const result = await this.databases.incrementDocumentAttribute({
+        databaseId: conf.appwriteDatabaseId,
+        collectionId: conf.appwriteCollectionId,
+        documentId: slug,
+        attribute: "viewCount",
+        value: 1
+      });
+      return result;
+    } catch (error) {
+      console.log("Appwrite Service :: IncrementPostViews:: error", error);
     }
   }
   

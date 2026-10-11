@@ -1,4 +1,4 @@
-import React,{useState,useEffect} from "react";
+import React,{useState,useEffect,useRef} from "react";
 import appwriteService from "../appwrite/config";
 import { Link } from "react-router-dom";
 import userImage from "../assets/wolf69w-nature-10184389.jpg";
@@ -6,6 +6,8 @@ import { useSelector } from "react-redux";
 import {profileAppwrite} from "../appwrite/profileConfig";
 import { CommentIcon, RepostIcon, HeartIcon, EyeIcon, ShareIcon, MoreIcon, VerifiedIcon } from "./Icons";
 import timeAgo from "../utils/timeAgo";
+import { Thermometer } from "lucide-react";
+
 function PostCard({
     $id,
     title,
@@ -15,16 +17,61 @@ function PostCard({
     userName,
     likes,
     createdAt,
-    comments
-})
-{
+    comments,
+    viewCount
+}) {
+    const postRef = useRef(null);
+    const hasCountRef = useRef(false);
+
     const profile = useSelector((state) => state.profile.profiles.find((prof) => prof.$id === userid));
 
     const profileImageUrl = profile?.profileImage ? profileAppwrite.getFileView(profile.profileImage) : userImage;
 
     const chip = "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-zinc-400 bg-white/[0.03] border border-white/[0.05] transition-all duration-200";
 
+    useEffect(() => {
+        const element = postRef.current;
+
+        if (!element || !$id) return;
+
+        let timer = null;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting && !hasCountRef.current) {
+                    //statrt timer when at least 50% is visible
+
+                    if (timer === null) {
+                        timer = setTimeout(async () => {
+                            hasCountRef.current = true;
+
+                            try {
+                                await appwriteService.incrementPostViews($id);
+                                console.log("View countted for post:", $id);
+                            } catch (error) {
+                                hasCountRef.current = false;
+                                console.log("Failed to count view:", error);
+                            }
+                        }, 2000);
+                    }
+                }
+                else {
+                    clearTimeout(timer);
+                    timer = null;
+                }    
+            },
+            {threshold:0.5}
+        );
+        observer.observe(element);
+
+        return () => {
+            clearTimeout(timer);
+            observer.disconnect();
+        };
+    },[$id])
+
     return (
+       <div ref={postRef}>
         <Link
             to={`/post/${$id}`}
             className="block group animate-rise"
@@ -112,7 +159,7 @@ function PostCard({
                     <span>{new Date(createdAt).toLocaleString("en-IN")}</span>
                     <span className="h-1 w-1 rounded-full bg-zinc-600" />
                     <span className="text-zinc-300 font-medium">
-                        64.6K Views
+                        {viewCount}
                     </span>
 
                 </div>
@@ -156,7 +203,7 @@ function PostCard({
                         >
                             <EyeIcon size={17} />
                             <span>
-                                1.6K
+                                {viewCount}
                             </span>
                         </button>
                         {/* Share */}
@@ -169,6 +216,7 @@ function PostCard({
                 </div>
             </article>
         </Link>
+      </div>
     );
 }
 

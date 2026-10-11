@@ -33,6 +33,7 @@ function AllPost() {
           likes={e.likes}
           createdAt={e.$createdAt}
           comments={e.comments}
+          viewCount={e.viewCount}
             />
         ))}
     </div>
