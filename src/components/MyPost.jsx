@@ -40,6 +40,8 @@ function MyPost() {
                   userName={post.userName}
               likes={post.likes}
               createdAt={post.$createdAt}
+              comments={post.comments}
+              viewCount={post.viewCount}
               />
           ))}
         </div>

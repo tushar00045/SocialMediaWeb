@@ -6,8 +6,8 @@ import { useSelector } from "react-redux";
 import {profileAppwrite} from "../appwrite/profileConfig";
 import { CommentIcon, RepostIcon, HeartIcon, EyeIcon, ShareIcon, MoreIcon, VerifiedIcon } from "./Icons";
 import timeAgo from "../utils/timeAgo";
-import { Thermometer } from "lucide-react";
-
+import { appwritelike } from "../appwrite/likeConfig";
+import CommentBox from "./CommentBox";
 function PostCard({
     $id,
     title,
@@ -20,12 +20,18 @@ function PostCard({
     comments,
     viewCount
 }) {
+    const [liked, setLiked] = useState(false);
+    const [likesCount, setLikesCount] = useState(likes ?? 0);
+    const [showCommentBox, setShowCommentBox] = useState(false);
+    const [commentCount, setCommentCount] = useState(comments ??0);
     const postRef = useRef(null);
     const hasCountRef = useRef(false);
 
     const profile = useSelector((state) => state.profile.profiles.find((prof) => prof.$id === userid));
 
     const profileImageUrl = profile?.profileImage ? profileAppwrite.getFileView(profile.profileImage) : userImage;
+
+    const userData = useSelector((state) => state.auth.userData);
 
     const chip = "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-zinc-400 bg-white/[0.03] border border-white/[0.05] transition-all duration-200";
 
@@ -68,7 +74,82 @@ function PostCard({
             clearTimeout(timer);
             observer.disconnect();
         };
-    },[$id])
+    }, [$id])
+
+    useEffect(() => {
+        if (!$id || !userData) return;
+        appwritelike.getLikeUsers($id).then((res) =>
+            setLiked(res?.documents?.some((l) => l.userId === userData.$id))
+        );
+    }, [$id, userData]);
+    
+    const handleLikes = async ($id) => {
+        const result = await appwritelike.getLikeUsers($id);
+
+        if (!result) {
+            return;
+        }
+
+        const alreadyLiked = result.documents.some((like) =>
+            like.userId === userData?.$id
+        );
+
+        if (alreadyLiked) {
+            const deleteLike = await appwritelike.deleteLike({
+                postId: $id, userId: userData?.$id
+            });
+
+            if (!deleteLike) {
+                return;
+            }
+
+            setLiked(false);
+
+            const updatePost = await appwriteService.decrementPostLikes($id);
+
+            if (updatePost) {
+                setLikesCount(updatePost.likes);
+            }
+        }
+        else {
+            const createLike = await appwritelike.createLike({
+                postId: $id, userId: userData?.$id
+            });
+
+            if (!createLike) {
+                return;
+            }
+
+            setLiked(true);
+
+            const updatePost = await appwriteService.incrementPostLikes($id);
+
+            if (updatePost) {
+                setLikesCount(updatePost.likes);
+            }
+        }
+    }
+
+    const handleShare = async () => {
+        console.log("share button is working.")
+        const shareUrl = window.location.href;
+
+        try {
+            if (navigator.share) {
+            await navigator.share({
+                title: post?.title,
+                text: "Check out this post!",
+                url: shareUrl,
+            });
+            } else {
+            await navigator.clipboard.writeText(shareUrl);
+            alert("Link copied!");
+            }
+        } catch (error) {
+            console.log("Share cancelled or failed:", error);
+        }
+    };
+    const actionBtn = "flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-sm font-medium text-zinc-400 bg-white/[0.03] border border-white/[0.06] transition-all duration-200";
 
     return (
        <div ref={postRef}>
@@ -168,22 +249,30 @@ function PostCard({
                 <div className="flex flex-wrap items-center gap-2">
                         {/* Like */}
                         <button
-                            onClick={(e) => e.preventDefault()}
-                            className={`${chip} hover:text-coral hover:border-coral/30 hover:bg-coral/10`}
+                            onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                handleLikes($id)
+                            }}
+                            className={`${actionBtn} hover:text-coral hover:border-coral/40 hover:bg-coral/10 ${liked ? "text-coral border-coral/40 bg-coral/10" : ""}`}
                         >
-                            <HeartIcon size={17} />
+                                    <HeartIcon size={19} fill={liked ? "currentColor" : "none"}
+                            className={liked? "text-coral" : ""}        />
                             <span>
-                                {likes}
+                                {likesCount}
                             </span>
                         </button>
                         {/* Comment */}
                         <button
-                            onClick={(e) => e.preventDefault()}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                setShowCommentBox(true)
+                            }}
                             className={`${chip} hover:text-iris hover:border-iris/30 hover:bg-iris/10`}
                         >
                             <CommentIcon size={17} />
                             <span>
-                                {comments}
+                                {commentCount}
                             </span>
                         </button>
                         {/* Repost */}
@@ -208,14 +297,31 @@ function PostCard({
                         </button>
                         {/* Share */}
                         <button
-                            onClick={(e) => e.preventDefault()}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleShare
+                            }}
                             className="ml-auto grid h-9 w-9 place-items-center rounded-full text-zinc-400 bg-white/3 border border-white/5 hover:text-volt hover:bg-volt/10 transition"
                         >
                             <ShareIcon size={17} />
                         </button>
                 </div>
             </article>
-        </Link>
+            </Link>
+            {showCommentBox && (<CommentBox post={{
+                $id,
+                title,
+                content,
+                featuredImage,
+                userid,
+                userName,
+                likes,
+                createdAt,
+                comments,
+                viewCount    
+            }} onclose={() => setShowCommentBox(false)}     onCommentAdded={(newComment) => {
+            setCommentCount((prev) => prev + 1);
+            }} />)}
       </div>
     );
 }

@@ -64,7 +64,6 @@ export default function Post() {
             if (postData) {
                 setPost(postData)
                 console.log(postData.likes);
-                //setLikesCount(postData.likes);
                 dispatch(setCurrentPost(postData))
             }
             else navigate("/");
