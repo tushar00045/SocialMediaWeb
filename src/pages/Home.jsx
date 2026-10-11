@@ -2,31 +2,63 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Container ,PostCard} from '../components'
 import appwriteService from "../appwrite/config"
-import { useDispatch } from 'react-redux';
-import { setPosts as setPostsInStore } from '../store/postSlice';
+import { useDispatch,useSelector } from 'react-redux';
+import { setPosts as setPostsInStore, setfeed, setExplore } from '../store/postSlice';
+
 function Home() {
-  const [posts, setPosts] = useState([]);
+  //const [posts, setPosts] = useState([]);
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    appwriteService.getPosts().then((posts) => {
-      if (posts) {
-        setPosts(posts.documents)
+  function shuffleArray(array) {
+    const shuffled = [...array];
 
-        dispatch(setPostsInStore(posts.documents))
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    return shuffled;
+  }
+  useEffect(() => {
+    appwriteService.getPosts().then((result) => {
+      if (result) {
+        //setPosts(result.documents)
+        dispatch(setPostsInStore(result.documents))
+
+        const shuffledPosts = shuffleArray(result.documents);
+
+        // Divide into two groups
+        const mid = Math.ceil(shuffledPosts.length / 2);
+
+        const feedPosts = shuffledPosts.slice(0, mid);
+        const explorePosts = shuffledPosts.slice(mid);
+
+        // Sort each group: newest first
+        const newestFirst = (a, b) =>
+          new Date(b.$createdAt) - new Date(a.$createdAt);
+
+        feedPosts.sort(newestFirst);
+        explorePosts.sort(newestFirst);
+
+        // Save both groups in Redux
+        dispatch(setfeed(feedPosts));
+        dispatch(setExplore(explorePosts));
       }
     })
-  }, [])
+  }, [dispatch])
 
-  if (posts.length == 0) {
+  const feed = useSelector((state) => state.post.feed);
+  
+  if (feed.length == 0) {
     return (
       <div className="w-full py-10 sm:py-16">
         <Container>
-          <div className="relative mx-auto max-w-3xl overflow-hidden rounded-[2rem] surface px-6 py-14 sm:px-12 sm:py-20 text-center animate-rise">
+          <div className="relative mx-auto max-w-3xl overflow-hidden rounded-4xl surface px-6 py-14 sm:px-12 sm:py-20 text-center animate-rise">
             <div className="absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-iris/30 blur-3xl" />
             <div className="absolute -bottom-24 right-0 h-60 w-60 rounded-full bg-volt/15 blur-3xl" />
             <div className="relative">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-zinc-300">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/4 px-3 py-1 text-xs font-medium text-zinc-300">
                 <span className="h-1.5 w-1.5 rounded-full bg-volt" /> A calmer place to share
               </span>
               <h1 className="mt-6 font-display text-4xl sm:text-6xl font-extrabold leading-[1.05] tracking-tight text-white">
@@ -39,7 +71,7 @@ function Home() {
                 <Link to="/login" className="rounded-xl bg-volt px-6 py-3 font-semibold text-black hover:brightness-110 transition shadow-[0_10px_40px_-10px_rgba(212,255,58,0.7)]">
                   Sign in
                 </Link>
-                <Link to="/signup" className="rounded-xl border border-white/15 px-6 py-3 font-semibold text-white hover:bg-white/[0.06] transition">
+                <Link to="/signup" className="rounded-xl border border-white/15 px-6 py-3 font-semibold text-white hover:bg-white/6 transition">
                   Create account
                 </Link>
               </div>
@@ -56,22 +88,22 @@ function Home() {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-volt">Your feed</p>
             <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-white">What&apos;s happening</h1>
           </div>
-          <Link to="/add-post" className="rounded-xl bg-white/[0.05] border border-white/[0.08] px-4 py-2 text-sm font-medium text-zinc-200 hover:bg-volt hover:text-black transition">
+          <Link to="/add-post" className="rounded-xl bg-white/5 border border-white/8 px-4 py-2 text-sm font-medium text-zinc-200 hover:bg-volt hover:text-black transition">
             + Post
           </Link>
         </div>
-        {posts.map((post) => (
+        {feed.map((f) => (
             <PostCard
-                key={post.$id}
-                $id={post.$id}
-                title={post.title}
-                content={post.content}
-                featuredImage={post.featuredImage}
-                userid={post.userid}
-                userName={post.userName}
-            likes={post.likes}
-            createdAt={post.$createdAt}
-            comments={post.comments}
+                key={f.$id}
+                $id={f.$id}
+                title={f.title}
+                content={f.content}
+                featuredImage={f.featuredImage}
+                userid={f.userid}
+                userName={f.userName}
+            likes={f.likes}
+            createdAt={f.$createdAt}
+            comments={f.comments}
             />
         ))}
     </div>

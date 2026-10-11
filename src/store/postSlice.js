@@ -2,6 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   posts: [],
+  feed: [],
+  explore:[],
   currentPost: null,
   loading: false
 };
@@ -52,11 +54,19 @@ const postSlice = createSlice({
 
     clearCurrentPost: (state, action) => {
       state.currentPost = null;
+    },
+
+    setfeed: (state, action)=>{
+      state.feed=action.payload
+    },
+
+    setExplore: (state, action) => {
+      state.explore=action.payload
     }
   }
 });
 
-export const { setPosts, setCurrentPost, setLoading, addPost, clearCurrentPost, updatePostInStore, removePost } = postSlice.actions;
+export const { setPosts, setCurrentPost, setLoading, addPost, clearCurrentPost, updatePostInStore, removePost,setfeed,setExplore } = postSlice.actions;
 export default postSlice.reducer;
 
 
