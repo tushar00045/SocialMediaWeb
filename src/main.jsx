@@ -22,6 +22,7 @@ import Post from "./pages/Post";
 import AllPost from "./pages/AllPost.jsx"
 import FullProfile from "./pages/FullProfile";
 import Follow from "./pages/Follow.jsx";
+import Repost from "./pages/Repost.jsx";
 
 const router = createBrowserRouter([
   {
@@ -86,6 +87,10 @@ const router = createBrowserRouter([
         path: "/profile/:userId/:type",
         element: <Follow/>
       },
+      {
+        path: "/profile:userId/:repost",
+        element:<Repost/>
+      }
     ],
   },
 ]);

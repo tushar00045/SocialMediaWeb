@@ -20,7 +20,7 @@ async function generateRepostId(userId, postId) {
   return hash.substring(0, 36);
 }
 
-export class AppwriteRepost{
+export class AppwriteRepost {
   client = new Client()
   databases;
 
@@ -63,7 +63,7 @@ export class AppwriteRepost{
     }
   }
 
-  async getReposts(userId) {
+  async getRepostsUsers(userId) {
     try {
       return await this.databases.listDocuments({
         databaseId: conf.appwriteDatabaseId,
@@ -76,5 +76,7 @@ export class AppwriteRepost{
       console.log("Unable to Get the repost:", error);
     }
   }
+}
 
-} 
+const appwriteRepost = new AppwriteRepost()
+export default appwriteRepost;

@@ -14,6 +14,7 @@ import { setCurrentPost } from "../store/postSlice";
 import { appwritelike, AppwriteLike } from "../appwrite/likeConfig";
 import { ArrowLeftIcon, CommentIcon, RepostIcon, HeartIcon, EyeIcon, ShareIcon, MoreIcon, VerifiedIcon, BookmarkIcon } from "../components/Icons";
 import { appwriteComment } from "../appwrite/commentConfig";
+import appwriteRepost from "../appwrite/repostConfig";
 //import { setComments } from "../store/commentSlice";
 
 export default function Post() {
@@ -24,6 +25,9 @@ export default function Post() {
     const [liked, setLiked] = useState(false);
     const [comments, setComments] = useState([]);
     const [commentCount, setCommentCount] = useState(0);
+    const [reposts, setReposts] = useState([]);
+    const [repostCount, setRepostCount] = useState(0);
+    const [reposted, setReposted] = useState(false);
     const { slug } = useParams();
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -173,6 +177,49 @@ export default function Post() {
 
             if (updatePost) {
                 setLikesCount(updatePost.likes);
+            }
+        }
+    }
+
+    const handleRepost = async () => {
+        const result = await appwriteRepost.getRepostsUsers(userData?.$id);
+        if (!result) {
+            return;
+        }
+
+        const alreadyRepost = result.documents.some((repost) => repost.userId === userData?.$id);
+
+        if (alreadyRepost) {
+            const deleteRepost = await appwriteRepost.deleteRepost({ userId: userData?.$id, postId: slug });
+
+            if (!deleteRepost) {
+                return;
+            }
+
+            setReposted(false);
+
+            const updatePost = await appwriteService.decrementPostRepost(slug);
+            if (updatePost) {
+                setRepostCount(updatePost.repostCount);
+            }
+        }
+        else {
+            const createRepost = await appwriteRepost.createRepost({
+                userId: userData?.$id,
+                postId: slug,
+                posterId: post.userid
+            });
+
+            if (!createRepost) {
+                return;
+            }
+
+            setReposted(true);
+            setReposts(post);
+
+            const updatePost = await appwriteService.incrementPostRepost(slug);
+            if (updatePost) {
+                setRepostCount(updatePost.repostCount);
             }
         }
     }
@@ -328,10 +375,11 @@ export default function Post() {
 
 
                             {/* Repost */}
-                            <button className={`${actionBtn} hover:text-volt hover:border-volt/40 hover:bg-volt/10`}>
+                                    <button onClick={handleRepost}
+                                        className={`${actionBtn} hover:text-volt hover:border-volt/40 hover:bg-volt/10`}>
                                 <RepostIcon size={19} />
                                 <span>
-                                    180
+                                    {repostCount}
                                 </span>
                             </button>
 

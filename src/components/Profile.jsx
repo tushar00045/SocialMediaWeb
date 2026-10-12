@@ -346,7 +346,12 @@ function Profile() {
                 <button className="flex-1 rounded-xl py-2.5 text-sm font-semibold bg-volt text-black">Posts</button>
                 <button className="flex-1 rounded-xl py-2.5 text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition">Replies</button>
                 <button className="flex-1 rounded-xl py-2.5 text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition">Media</button>
-                <button className="flex-1 rounded-xl py-2.5 text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition">Likes</button>
+                <button
+                    onClick={() => {
+                        navigate(`/profile/${userId}/repost`)
+                    }}
+                    
+                    className="flex-1 rounded-xl py-2.5 text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition">reposts</button>
             </div>
 
             <div className="py-4">

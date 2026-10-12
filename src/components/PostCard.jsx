@@ -18,7 +18,8 @@ function PostCard({
     likes,
     createdAt,
     comments,
-    viewCount
+    viewCount,
+    repostCount
 }) {
     const [liked, setLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(likes ?? 0);
@@ -282,7 +283,7 @@ function PostCard({
                         >
                             <RepostIcon size={17} />
                             <span>
-                                180
+                                {repostCount}
                             </span>
                         </button>
                         {/* views */}

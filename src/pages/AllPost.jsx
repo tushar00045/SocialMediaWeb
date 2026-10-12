@@ -34,6 +34,7 @@ function AllPost() {
           createdAt={e.$createdAt}
           comments={e.comments}
           viewCount={e.viewCount}
+          repostCount={e.repostCount}
             />
         ))}
     </div>

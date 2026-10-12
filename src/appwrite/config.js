@@ -127,6 +127,34 @@ export class Service{
     }
   }
 
+  async incrementPostRepost(slug) {
+    try {
+      return await this.databases.incrementDocumentAttribute({
+        databaseId: conf.appwriteDatabaseId,
+        collectionId: conf.appwriteCollectionId,
+        documentId: slug,
+        attribute: "repostCount",
+        value: 1
+      });
+    } catch (error) {
+      console.log("Error to Increment tht repost count.", error);
+    }
+  }
+
+  async decrementPostRepost(slug) {
+    try {
+      return await this.databases.decrementDocumentAttribute({
+        databaseId: conf.appwriteDatabaseId,
+        collectionId: conf.appwriteCollectionId,
+        documentId: slug,
+        attribute: "repostCount",
+        value: 1
+      });
+    } catch (error) {
+      console.log("Error in Decrement the Repost Count:",error)
+    }
+  }
+
   async incrementPostViews(slug) {
     try {
       const result = await this.databases.incrementDocumentAttribute({

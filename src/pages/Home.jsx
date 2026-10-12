@@ -105,6 +105,7 @@ function Home() {
             createdAt={f.$createdAt}
             comments={f.comments}
             viewCount={f.viewCount}
+            repostCount={f.repostCount}
             />
         ))}
     </div>

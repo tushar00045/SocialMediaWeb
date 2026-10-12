@@ -42,6 +42,7 @@ function MyPost() {
               createdAt={post.$createdAt}
               comments={post.comments}
               viewCount={post.viewCount}
+              repostCount={post.repostCount}
               />
           ))}
         </div>
