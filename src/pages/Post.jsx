@@ -96,6 +96,41 @@ export default function Post() {
         CountComments(slug);
     }, [slug])
 
+    useEffect(() => {
+        if (!slug || !userData?.$id) return;
+
+        const loadRepostState = async () => {
+            try {
+                const res = await appwriteRepost.getRepostsUsers(userData.$id);
+
+                setReposted(
+                    res?.documents?.some(
+                        (repost) => repost.postId === slug
+                    ) ?? false
+                );
+            } catch (error) {
+                console.error("Error fetching repost state:", error);
+            }
+        };
+
+        loadRepostState();
+    }, [slug, userData?.$id]);
+
+    const repostCounts = async () => {
+        if (!slug) return;
+
+        try {
+            const result = await appwriteRepost.getRepostsByPost(slug);
+            setRepostCount(result?.total ?? 0);
+        } catch (error) {
+            console.error("Error fetching repost count:", error);
+        }
+    };
+
+    useEffect(() => {
+        repostCounts();
+    }, [slug]);
+
     
     // const comments = useSelector((state) => state.comment.comments);
     // useEffect(() => {
@@ -182,12 +217,15 @@ export default function Post() {
     }
 
     const handleRepost = async () => {
+        console.log("handleRepost function is calling.");
         const result = await appwriteRepost.getRepostsUsers(userData?.$id);
         if (!result) {
             return;
         }
 
-        const alreadyRepost = result.documents.some((repost) => repost.userId === userData?.$id);
+        const alreadyRepost = result.documents.find((repost) => repost.userId === userData?.$id &&
+            repost.postId === slug
+        );
 
         if (alreadyRepost) {
             const deleteRepost = await appwriteRepost.deleteRepost({ userId: userData?.$id, postId: slug });
@@ -197,6 +235,8 @@ export default function Post() {
             }
 
             setReposted(false);
+
+            setReposts((prev) => prev.filter((repost) => repost.$id !== alreadyRepost.$id));
 
             const updatePost = await appwriteService.decrementPostRepost(slug);
             if (updatePost) {
@@ -215,7 +255,7 @@ export default function Post() {
             }
 
             setReposted(true);
-            setReposts(post);
+            setReposts((prev)=>[...prev,createRepost]);
 
             const updatePost = await appwriteService.incrementPostRepost(slug);
             if (updatePost) {
@@ -375,7 +415,10 @@ export default function Post() {
 
 
                             {/* Repost */}
-                                    <button onClick={handleRepost}
+                                    <button onClick={() => {
+                                            console.log("REPOST BUTTON CLICKED");
+                                            handleRepost();
+                                        }}
                                         className={`${actionBtn} hover:text-volt hover:border-volt/40 hover:bg-volt/10`}>
                                 <RepostIcon size={19} />
                                 <span>

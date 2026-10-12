@@ -76,6 +76,21 @@ export class AppwriteRepost {
       console.log("Unable to Get the repost:", error);
     }
   }
+  async getRepostsByPost(postId) {
+    try {
+      return await this.databases.listDocuments({
+        databaseId: conf.appwriteDatabaseId,
+        collectionId: conf.appwriteCollectionId8,
+        queries: [
+          Query.equal("postId", postId),
+          Query.limit(100),
+        ],
+      });
+    } catch (error) {
+      console.error("Unable to fetch reposts:", error);
+      return null;
+    }
+  }
 }
 
 const appwriteRepost = new AppwriteRepost()
