@@ -8,6 +8,7 @@ import { CommentIcon, RepostIcon, HeartIcon, EyeIcon, ShareIcon, MoreIcon, Verif
 import timeAgo from "../utils/timeAgo";
 import { appwritelike } from "../appwrite/likeConfig";
 import CommentBox from "./CommentBox";
+import appwriteRepost from "../appwrite/repostConfig";
 function PostCard({
     $id,
     title,
@@ -24,7 +25,10 @@ function PostCard({
     const [liked, setLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(likes ?? 0);
     const [showCommentBox, setShowCommentBox] = useState(false);
-    const [commentCount, setCommentCount] = useState(comments ??0);
+    const [commentCount, setCommentCount] = useState(comments ?? 0);
+    const [reposted, setReposted] = useState(false);
+    const [reposts, setReposts] = useState([]);
+    const [repostC, setRepostCount] = useState(repostCount ?? 0);
     const postRef = useRef(null);
     const hasCountRef = useRef(false);
 
@@ -83,6 +87,26 @@ function PostCard({
             setLiked(res?.documents?.some((l) => l.userId === userData.$id))
         );
     }, [$id, userData]);
+
+    useEffect(() => {
+        if (!$id || !userData?.$id) return;
+
+        const loadRepostState = async () => {
+            try {
+                const res = await appwriteRepost.getRepostsUsers(userData.$id);
+
+                setReposted(
+                    res?.documents?.some(
+                        (repost) => repost.postId === $id
+                    ) ?? false
+                );
+            } catch (error) {
+                console.error("Error fetching repost state:", error);
+            }
+        };
+
+        loadRepostState();
+    }, [$id, userData?.$id]);
     
     const handleLikes = async ($id) => {
         const result = await appwritelike.getLikeUsers($id);
@@ -127,6 +151,53 @@ function PostCard({
 
             if (updatePost) {
                 setLikesCount(updatePost.likes);
+            }
+        }
+    }
+
+    const handleRepost = async () => {
+        console.log("handleRepost function is calling.");
+        const result = await appwriteRepost.getRepostsUsers(userData?.$id);
+        if (!result) {
+            return;
+        }
+
+        const alreadyRepost = result.documents.find((repost) => repost.userId === userData?.$id && repost.postId === $id);
+
+        if (alreadyRepost) {
+            const deleteRepost = await appwriteRepost.deleteRepost({ userId: userData?.$id, postId: $id });
+
+            if (!deleteRepost) {
+                return;
+            }
+
+            setReposted(false);
+
+            setReposts((prev) => prev.filter((repost) => repost.$id !== alreadyRepost.$id));
+
+            const updatePost = await appwriteService.decrementPostRepost($id);
+
+            if (updatePost) {
+                setRepostCount(updatePost.repostCount);
+            }
+        }
+        else {
+            const createRepost = await appwriteRepost.createRepost({
+                userId: userData?.$id,
+                postId: $id,
+                posterId: userid
+            });
+
+            if (!createRepost) {
+                return;
+            }
+
+            setReposted(true);
+            setReposts((prev)=>[...prev,createRepost]);
+
+            const updatePost = await appwriteService.incrementPostRepost($id);
+            if (updatePost) {
+                setRepostCount(updatePost.repostCount);
             }
         }
     }
@@ -278,12 +349,17 @@ function PostCard({
                         </button>
                         {/* Repost */}
                         <button
-                            onClick={(e) => e.preventDefault()}
+                            onClick={(e) =>{ e.preventDefault();
+                                handleRepost()
+                            console.log("function streeming.")}
+                            }
                             className={`${chip} hover:text-volt hover:border-volt/30 hover:bg-volt/10`}
                         >
-                            <RepostIcon size={17} />
+                            <RepostIcon size={17}
+                            className={reposted?"text-volt":""}
+                            />
                             <span>
-                                {repostCount}
+                                {repostC}
                             </span>
                         </button>
                         {/* views */}

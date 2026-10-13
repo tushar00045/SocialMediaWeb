@@ -415,12 +415,15 @@ export default function Post() {
 
 
                             {/* Repost */}
-                                    <button onClick={() => {
+                            <button onClick={() => {
                                             console.log("REPOST BUTTON CLICKED");
                                             handleRepost();
                                         }}
                                         className={`${actionBtn} hover:text-volt hover:border-volt/40 hover:bg-volt/10`}>
-                                <RepostIcon size={19} />
+                                        <RepostIcon size={19}
+                                        className={reposted?"text-volt":""}
+                                        />
+                                        
                                 <span>
                                     {repostCount}
                                 </span>
