@@ -23,6 +23,7 @@ import AllPost from "./pages/AllPost.jsx"
 import FullProfile from "./pages/FullProfile";
 import Follow from "./pages/Follow.jsx";
 import Repost from "./pages/Repost.jsx";
+import Media from "./pages/Media.jsx";
 
 const router = createBrowserRouter([
   {
@@ -90,7 +91,11 @@ const router = createBrowserRouter([
       {
         path: "/profile/:userId/repost",
         element:<Repost/>
-      }
+      },
+      { 
+        path: "/profile/:userId/media",
+        element:<Media/>
+      },
     ],
   },
 ]);

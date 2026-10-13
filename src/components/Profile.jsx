@@ -346,12 +346,16 @@ function Profile() {
             <div className="mt-5 flex gap-1 rounded-2xl bg-white/3 border border-white/6 p-1">
                 <button className="flex-1 rounded-xl py-2.5 text-sm font-semibold bg-volt text-black">Posts</button>
                 <button className="flex-1 rounded-xl py-2.5 text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition">Replies</button>
-                <button className="flex-1 rounded-xl py-2.5 text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition">Media</button>
                 <button
                     type="button"
                     onClick={(e) => {
-                        console.log("Reposts button clicked!");
-                        console.log("userId:", userId);
+                        navigate(`/profile/${userId}/media`)
+                    }}
+                
+                    className="flex-1 rounded-xl py-2.5 text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition">Media</button>
+                <button
+                    type="button"
+                    onClick={(e) => {
                         navigate(`/profile/${userId}/repost`);
                     }}
                     className="flex-1 rounded-xl py-2.5 text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition"
