@@ -20,7 +20,8 @@ function PostCard({
     createdAt,
     comments,
     viewCount,
-    repostCount
+    repostCount,
+    onUnrepost,
 }) {
     const [liked, setLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(likes ?? 0);
@@ -172,6 +173,8 @@ function PostCard({
             }
 
             setReposted(false);
+            // Remove this card from the Reposts page
+            onUnrepost?.();
 
             setReposts((prev) => prev.filter((repost) => repost.$id !== alreadyRepost.$id));
 

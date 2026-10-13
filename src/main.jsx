@@ -88,7 +88,7 @@ const router = createBrowserRouter([
         element: <Follow/>
       },
       {
-        path: "/profile:userId/:repost",
+        path: "/profile/:userId/repost",
         element:<Repost/>
       }
     ],

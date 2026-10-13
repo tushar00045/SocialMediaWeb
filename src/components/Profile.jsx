@@ -11,6 +11,7 @@ import followAppwrite from '../appwrite/followConfig';
 import { ArrowLeftIcon, MoreIcon, MessageIcon, VerifiedIcon, CalendarIcon, PinIcon } from './Icons';
 
 function Profile() {
+    console.log("Profile component rendered");
     const userData = useSelector((state) => state.auth.userData);
     const [showEditProfile, setShowEditProfile] = useState(false);
     const [posts, setPosts] = useState([]);
@@ -347,11 +348,16 @@ function Profile() {
                 <button className="flex-1 rounded-xl py-2.5 text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition">Replies</button>
                 <button className="flex-1 rounded-xl py-2.5 text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition">Media</button>
                 <button
-                    onClick={() => {
-                        navigate(`/profile/${userId}/repost`)
+                    type="button"
+                    onClick={(e) => {
+                        console.log("Reposts button clicked!");
+                        console.log("userId:", userId);
+                        navigate(`/profile/${userId}/repost`);
                     }}
-                    
-                    className="flex-1 rounded-xl py-2.5 text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition">reposts</button>
+                    className="flex-1 rounded-xl py-2.5 text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition"
+                >
+                    reposts
+                </button>
             </div>
 
             <div className="py-4">
