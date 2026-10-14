@@ -9,16 +9,22 @@ function Repost() {
   const [allPosts, setAllPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const userData = useSelector((state) => state.auth.userData);
+    
+  const { userId } = useParams(); // Profile being viewed
+  const loggedInUserId = userData?.$id;
+  const profileUserId = userId;
   
   const navigate = useNavigate();
   
   useEffect(() => {
+    if (!profileUserId) return;
+
     const fetchData = async () => {
         setLoading(true);
 
         try {
             const [repostResult, postResult] = await Promise.all([
-                appwriteRepost.getRepostsUsers(userData.$id),
+                appwriteRepost.getRepostsUsers(profileUserId),
                 appwriteService.getPosts(),
             ]);
 
@@ -32,15 +38,15 @@ function Repost() {
     };
 
     fetchData();
-  }, [userData?.$id]);
+  }, [profileUserId]);
 
   // Remove a repost from this page after unreposting.
   const handleUnrepost = (repostId) => {
-      setReposts((prev) =>
-          prev.filter((repost) => repost.$id !== repostId)
-      );
+    setReposts((prev) =>
+        prev.filter((repost) => repost.$id !== repostId)
+    );
   };
-  
+    
   const repostedPosts = reposts
     .map((repost) => {
       const originalPost = allPosts.find(
