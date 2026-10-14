@@ -127,6 +127,20 @@ export class AppwriteComment {
     }
   }
 
+  async updateComment(commentId, data) {
+    try {
+      return await this.databases.updateDocument({
+        databaseId: conf.appwriteDatabaseId,
+        collectionId: conf.appwriteCollectionId3,
+        documentId: commentId,
+        data,
+      });
+    } catch (error) {
+      console.error("Unable to update comment:", error);
+      return null;
+    }
+  }
+
   async deleteComment(commentId) {
     try {
       return await this.databases.deleteDocument(
