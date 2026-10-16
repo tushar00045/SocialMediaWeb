@@ -25,6 +25,7 @@ import Follow from "./pages/Follow.jsx";
 import Repost from "./pages/Repost.jsx";
 import Media from "./pages/Media.jsx";
 
+
 const router = createBrowserRouter([
   {
     path: "/",

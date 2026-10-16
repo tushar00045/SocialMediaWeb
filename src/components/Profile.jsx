@@ -9,6 +9,7 @@ import defaultProfileImage from '../assets/wolf69w-nature-10184389.jpg';
 import { setCurrentProfile, addProfile } from '../store/profileSlice';
 import followAppwrite from '../appwrite/followConfig';
 import { ArrowLeftIcon, MoreIcon, MessageIcon, VerifiedIcon, CalendarIcon, PinIcon } from './Icons';
+import timeAgo from '../utils/timeAgo';
 
 function Profile() {
     console.log("Profile component rendered");
@@ -236,13 +237,13 @@ function Profile() {
                 </div>
 
                 <div className="flex justify-end gap-2 px-5 sm:px-6 pt-4">
-                    <button className="grid h-11 w-11 place-items-center rounded-xl border border-white/10 text-zinc-300 hover:bg-white/6 transition">
+                    {/* <button className="grid h-11 w-11 place-items-center rounded-xl border border-white/10 text-zinc-300 hover:bg-white/6 transition">
                         <MoreIcon size={20} />
-                    </button>
-
+                    </button> */}
+{/* 
                     <button className="grid h-11 w-11 place-items-center rounded-xl border border-white/10 text-zinc-300 hover:bg-white/6 transition">
                         <MessageIcon size={19} />
-                    </button>
+                    </button> */}
 
                     <button
                         disabled={followLoading}
@@ -309,7 +310,7 @@ function Profile() {
                         {profile.address && (
                             <span className="inline-flex items-center gap-1.5"><PinIcon size={15} /> {profile.address}</span>
                         )}
-                        <span className="inline-flex items-center gap-1.5"><CalendarIcon size={15} /> Joined August 2026</span>
+                        <span className="inline-flex items-center gap-1.5"><CalendarIcon size={15} /> Join On {timeAgo(profile.$createdAt)}</span>
                     </div>
 
                     {/* ================= STATS TILES ================= */}
@@ -345,7 +346,12 @@ function Profile() {
             {/* ================= TABS ================= */}
             <div className="mt-5 flex gap-1 rounded-2xl bg-white/3 border border-white/6 p-1">
                 <button className="flex-1 rounded-xl py-2.5 text-sm font-semibold bg-volt text-black">Posts</button>
-                <button className="flex-1 rounded-xl py-2.5 text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition">Replies</button>
+                {/* <button
+                    type="button"
+                    onClick={(e) => {
+                        navigate(`/profile/${userId}/replies`)
+                    }}
+                    className="flex-1 rounded-xl py-2.5 text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition">Replies</button> */}
                 <button
                     type="button"
                     onClick={(e) => {
@@ -364,7 +370,7 @@ function Profile() {
                 </button>
             </div>
 
-            <div className="py-4">
+            {/* <div className="py-4">
                 <div className="surface rounded-2xl p-4">
                     <div className="flex gap-3">
                         <img src={profileImageUrl} alt={userName} className="w-10 h-10 rounded-xl object-cover" />
@@ -377,7 +383,7 @@ function Profile() {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> */}
 
             {showEditProfile && <EditProfile onClose={() => setShowEditProfile(false)} />}
         </div>

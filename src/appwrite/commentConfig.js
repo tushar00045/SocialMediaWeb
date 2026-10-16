@@ -70,6 +70,30 @@ export class AppwriteComment {
       return null;
     }
   }
+  async getPostIdsByUser(userId) {
+    try {
+      const result = await this.databases.listDocuments({
+        databaseId: conf.appwriteDatabaseId,
+        collectionId: conf.appwriteCollectionId3,
+        queries: [
+          Query.equal("userId", userId),
+          Query.limit(100)
+        ]
+      });
+
+      if (!result) return [];
+
+      const postIds = result.documents.map(
+        (comment) => comment.postId
+      );
+
+      return postIds;
+
+    } catch (error) {
+      console.error("Failed to fetch post IDs:", error);
+      return [];
+    }
+  }
 
   async incrementCommentLikes(commentId) {
     try {

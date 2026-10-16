@@ -6,18 +6,48 @@ import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
  
 function MyPost() {
-  const userData = useSelector(state => state.auth.userData);
- 
-  // All hooks are called first (React requires hooks to run in the same order on every render)
   const { userId } = useParams();
- 
-  const Allposts = useSelector((state) => state.post.posts);
- 
-  if (!userData) {
-    return;
+  
+  const [allPosts, setAllPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchPosts = async () => {
+      setLoading(true);
+
+      try {
+        const result = await appwriteService.getPosts();
+
+        if (result) {
+          setAllPosts(result.documents ?? []);
+        } else {
+          setAllPosts([]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch posts:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, [userId]);
+
+  const myPosts = allPosts.filter(
+    (post) => post.userid === userId
+  );
+  if (loading) {
+    return (
+      <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 text-center">
+        <div className="h-9 w-9 animate-spin rounded-full border-4 border-white/10 border-t-volt" />
+        <p className="text-sm text-zinc-400">
+          Loading posts...
+        </p>
+      </div>
+    );
   }
- 
-  const myPosts = Allposts.filter(post => post.userid === userId);
  
   return (
     <div className="w-full pt-2">
