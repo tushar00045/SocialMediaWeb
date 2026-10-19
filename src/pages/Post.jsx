@@ -15,6 +15,8 @@ import { appwritelike, AppwriteLike } from "../appwrite/likeConfig";
 import { ArrowLeftIcon, CommentIcon, RepostIcon, HeartIcon, EyeIcon, ShareIcon, MoreIcon, VerifiedIcon, BookmarkIcon } from "../components/Icons";
 import { appwriteComment } from "../appwrite/commentConfig";
 import appwriteRepost from "../appwrite/repostConfig";
+import appwriteHistory from "../appwrite/historyConfig";
+import { AlarmCheck } from "lucide-react";
 //import { setComments } from "../store/commentSlice";
 
 export default function Post() {
@@ -28,6 +30,7 @@ export default function Post() {
     const [reposts, setReposts] = useState([]);
     const [repostCount, setRepostCount] = useState(0);
     const [reposted, setReposted] = useState(false);
+    const [bookMarked, setBookMark] = useState(false);
     const { slug } = useParams();
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -130,6 +133,26 @@ export default function Post() {
     useEffect(() => {
         repostCounts();
     }, [slug]);
+
+        useEffect(() => {
+        if (!slug || !userData?.$id) return;
+
+        const loadBookMarkState = async () => {
+            try {
+                const res = await appwriteHistory.getHistoryUsers(userData.$id);
+
+                setBookMark(
+                    res?.documents?.some(
+                        (bookmark) => bookmark.postId === slug
+                    ) ?? false
+                );
+            } catch (error) {
+                console.error("Error fetching bookmark state:", error);
+            }
+        };
+
+        loadBookMarkState();
+    }, [slug, userData?.$id]);
 
     
     // const comments = useSelector((state) => state.comment.comments);
@@ -265,7 +288,40 @@ export default function Post() {
     }
 
     const handleBookMark = async () => {
-        
+        console.log("BookMark Function Is working.");
+
+        const result = await appwriteHistory.getHistoryUsers(userData?.$id);
+
+        if (!result) {
+            return true;
+        }
+
+        const alreadyBookMark = result.documents.find((bookmark) => bookmark.userId === userData?.$id && bookmark.postId === slug);
+
+        if (alreadyBookMark) {
+            const result = await appwriteHistory.deleteHistory({
+                userId: userData?.$id,
+                postId: slug
+            });
+
+            if (!result) {
+                return;
+            }
+
+            setBookMark(false);
+        }
+        else {       
+            const result = await appwriteHistory.createHistory({
+                userId: userData?.$id,
+                postId: slug
+            });
+            
+            if (!result) {
+                return;
+            }
+
+            setBookMark(true);
+        }
     }
 
     const handleShare = async () => {
@@ -343,8 +399,8 @@ export default function Post() {
                         {/* Right side */}
                         <div className="flex items-center gap-1 text-zinc-500">
 
-                            <button className="grid h-9 w-9 place-items-center rounded-xl hover:text-white hover:bg-white/6 transition">
-                                <BookmarkIcon size={18} />
+                            <button onClick={handleBookMark} className="grid h-9 w-9 place-items-center rounded-xl hover:text-white hover:bg-white/6 transition">
+                                <BookmarkIcon size={18} fill={bookMarked?"currentColor":""} className={bookMarked?"text-blue-50":""} />
                             </button>
 
                             <button className="grid h-9 w-9 place-items-center rounded-xl hover:text-white hover:bg-white/6 transition">

@@ -41,6 +41,12 @@ function Header() {
       active: authStatus
     },
     {
+      name: 'History',
+      slug: '/history',
+      icon: HomeIcon,
+      active: authStatus
+    },
+    {
       name: 'Login',
       slug: '/login',
       icon: LoginIcon,
