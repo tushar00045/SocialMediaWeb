@@ -6,7 +6,7 @@ import authService from '../../appwrite/auth'
 import { logout } from '../../store/authSlice'
 import {profileAppwrite} from '../../appwrite/profileConfig'
 import defaultProfileImage from '../../assets/wolf69w-nature-10184389.jpg'
-import { HomeIcon, GridIcon, PlusIcon, UserIcon, LogoutIcon, LoginIcon, SparkIcon } from '../Icons'
+import { HomeIcon, GridIcon, PlusIcon, UserIcon, LogoutIcon, LoginIcon, SparkIcon,BookmarkIcon } from '../Icons'
 
 function Header() {
   const authStatus = useSelector((state) => state.auth.status)
@@ -43,7 +43,7 @@ function Header() {
     {
       name: 'History',
       slug: '/history',
-      icon: HomeIcon,
+      icon: BookmarkIcon,
       active: authStatus
     },
     {

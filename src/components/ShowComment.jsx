@@ -12,7 +12,7 @@ import { CommentIcon, RepostIcon, HeartIcon, EyeIcon, ShareIcon, BookmarkIcon, M
 import timeAgo from '../utils/timeAgo';
 import { appwriteCommentLike } from '../appwrite/likeCommentConfig';
 import ShowCommentReply from './ShowCommentReply';
-import CommentBox2 from './commentBox2';
+import CommentBox2 from './CommentBox2';
 import { appwriteReply } from '../appwrite/commentReply';
 import OptionsMenu from './OptionsMenu';
 function ShowComment({comments}) {
