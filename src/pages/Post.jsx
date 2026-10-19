@@ -264,6 +264,10 @@ export default function Post() {
         }
     }
 
+    const handleBookMark = async () => {
+        
+    }
+
     const handleShare = async () => {
         console.log("share button is working.")
         const shareUrl = window.location.href;

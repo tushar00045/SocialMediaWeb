@@ -349,9 +349,9 @@ function Profile() {
                 {/* <button
                     type="button"
                     onClick={(e) => {
-                        navigate(`/profile/${userId}/replies`)
+                        navigate(`/profile/${userId}/history`)
                     }}
-                    className="flex-1 rounded-xl py-2.5 text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition">Replies</button> */}
+                    className="flex-1 rounded-xl py-2.5 text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition">History</button> */}
                 <button
                     type="button"
                     onClick={(e) => {

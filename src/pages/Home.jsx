@@ -6,7 +6,7 @@ import { useDispatch,useSelector } from 'react-redux';
 import { setPosts as setPostsInStore, setfeed, setExplore } from '../store/postSlice';
 
 function Home() {
-  //const [posts, setPosts] = useState([]);
+  const userData = useSelector((state) => state.auth.userData);
   const dispatch = useDispatch();
 
   function shuffleArray(array) {
@@ -20,33 +20,43 @@ function Home() {
 
     return shuffled;
   }
+
   useEffect(() => {
-    appwriteService.getPosts().then((result) => {
-      if (result) {
-        //setPosts(result.documents)
-        dispatch(setPostsInStore(result.documents))
+      if (!userData?.$id) return;
 
-        const shuffledPosts = shuffleArray(result.documents);
+      const fetchPosts = async () => {
+        const result = await appwriteService.getPosts();
 
-        // Divide into two groups
-        const mid = Math.ceil(shuffledPosts.length / 2);
+        if (result) {
+            // Exclude the logged-in user's posts.
+            const otherUsersPosts = result.documents.filter(
+                (post) => post.userid !== userData.$id
+            );
 
-        const feedPosts = shuffledPosts.slice(0, mid);
-        const explorePosts = shuffledPosts.slice(mid);
+            dispatch(setPostsInStore(otherUsersPosts));
 
-        // Sort each group: newest first
-        const newestFirst = (a, b) =>
-          new Date(b.$createdAt) - new Date(a.$createdAt);
+            const shuffledPosts = shuffleArray(otherUsersPosts);
 
-        feedPosts.sort(newestFirst);
-        explorePosts.sort(newestFirst);
+            // Divide into two groups.
+            const mid = Math.ceil(shuffledPosts.length / 2);
 
-        // Save both groups in Redux
-        dispatch(setfeed(feedPosts));
-        dispatch(setExplore(explorePosts));
-      }
-    })
-  }, [dispatch])
+            const feedPosts = shuffledPosts.slice(0, mid);
+            const explorePosts = shuffledPosts.slice(mid);
+
+            // Sort each group: newest first.
+            const newestFirst = (a, b) =>
+                new Date(b.$createdAt) - new Date(a.$createdAt);
+
+            feedPosts.sort(newestFirst);
+            explorePosts.sort(newestFirst);
+
+            dispatch(setfeed(feedPosts));
+            dispatch(setExplore(explorePosts));
+        }
+      };
+
+      fetchPosts();
+  }, [dispatch, userData?.$id]);
 
   const feed = useSelector((state) => state.post.feed);
   

@@ -43,12 +43,14 @@ function EditProfile({ onClose }) {
             const oldProfile = await profileAppwrite.getProfile(userData.$id);
             const finalProfileImage = profileImageId || oldProfile?.profileImage || '';
             const finalCoverImage = coverImageId || oldProfile?.coverImage || '';
+            const finalBio = oldProfile?.bio || '';
+            const finalAddress = oldProfile?.address || '';
 
             await profileAppwrite.updateProfile(userData.$id, {
                 profileImage: finalProfileImage,
                 coverImage: finalCoverImage,
-                bio: data.bio || '',
-                address: data.address || ''
+                bio: data.bio || finalBio||'',
+                address: data.address ||finalAddress|| ''
             });
 
             onClose();

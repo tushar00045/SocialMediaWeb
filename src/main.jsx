@@ -24,7 +24,7 @@ import FullProfile from "./pages/FullProfile";
 import Follow from "./pages/Follow.jsx";
 import Repost from "./pages/Repost.jsx";
 import Media from "./pages/Media.jsx";
-
+import History from "./pages/History.jsx";
 
 const router = createBrowserRouter([
   {
@@ -66,6 +66,14 @@ const router = createBrowserRouter([
             <AddPost />
           </AuthLayout>
         ),
+      },
+      { 
+        path: "/history",
+        element: (
+          <AuthLayout authentication={true}>
+            <History/>
+          </AuthLayout>
+        )
       },
       {
         path: "/edit-post/:slug",
