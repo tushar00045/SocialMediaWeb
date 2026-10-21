@@ -5,13 +5,14 @@ import appwriteRepost from "../appwrite/repostConfig";
 import { useParams ,useNavigate} from "react-router-dom";
 import appwriteService from "../appwrite/config";
 import appwriteHistory from "../appwrite/historyConfig";
+
 function History() {
   const [bookMarkPosts, setBookmarkPost] = useState([]);
   const [allPosts, setAllPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const userData = useSelector((state) => state.auth.userData);
 
-  
+    const navigate = useNavigate();
   useEffect(() => {
     if (!userData?.$id) return;
 
