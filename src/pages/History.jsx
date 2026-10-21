@@ -61,7 +61,7 @@ function History() {
                   </div>
 
                   <h2 className="text-xl font-bold text-white">
-                      Loading reposts
+                      Loading History
                   </h2>
 
                   <p className="mt-2 text-sm leading-6 text-zinc-400">
