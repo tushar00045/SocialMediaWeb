@@ -9,6 +9,7 @@ import timeAgo from "../utils/timeAgo";
 import { appwritelike } from "../appwrite/likeConfig";
 import CommentBox from "./CommentBox";
 import appwriteRepost from "../appwrite/repostConfig";
+import useOptimisticAction from "../hooks/useOptimisticAction";
 function PostCard({
     $id,
     title,
@@ -32,6 +33,10 @@ function PostCard({
     const [repostC, setRepostCount] = useState(repostCount ?? 0);
     const postRef = useRef(null);
     const hasCountRef = useRef(false);
+    const {runAction: runLikeAction,pending:likePending} = useOptimisticAction();
+    const {runAction: runRepostAction,pending: repostPending,} = useOptimisticAction();
+    const [likeStateLoaded, setLikeStateLoaded] = useState(false);
+    const [repostStateLoaded, setRepostStateLoaded] = useState(false);
 
     const profile = useSelector((state) => state.profile.profiles.find((prof) => prof.$id === userid));
 
@@ -83,32 +88,84 @@ function PostCard({
     }, [$id])
 
     useEffect(() => {
-        if (!$id || !userData) return;
-        appwritelike.getLikeUsers($id).then((res) =>
-            setLiked(res?.documents?.some((l) => l.userId === userData.$id))
-        );
-    }, [$id, userData]);
+        let cancelled = false;
+
+        setLikeStateLoaded(false);
+
+        if (!$id || !userData?.$id) {
+            setLiked(false);
+            setLikeStateLoaded(true);
+            return;
+        }
+
+        appwritelike.getLikeUsers($id)
+            .then((res) => {
+                if (cancelled) return;
+
+                setLiked(
+                    res?.documents?.some(
+                        (like) => like.userId === userData.$id
+                    ) ?? false
+                );
+            })
+            .catch((error) => {
+                console.error("Failed to load like state:", error);
+            })
+            .finally(() => {
+                if (!cancelled) setLikeStateLoaded(true);
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [$id, userData?.$id]);
 
     useEffect(() => {
-        if (!$id || !userData?.$id) return;
+        let cancelled = false;
+
+        setRepostStateLoaded(false);
+
+        if (!userData?.$id || !$id) {
+            setReposted(false);
+            setRepostStateLoaded(true);
+            return;
+        }
 
         const loadRepostState = async () => {
             try {
-                const res = await appwriteRepost.getRepostsUsers(userData.$id);
-
-                setReposted(
-                    res?.documents?.some(
-                        (repost) => repost.postId === $id
-                    ) ?? false
+                const result = await appwriteRepost.getRepostsUsers(
+                    userData.$id
                 );
+
+                if (cancelled) return;
+
+                if (!result) {
+                    throw new Error("Failed to load repost state");
+                }
+
+                const alreadyReposted = result.documents.some(
+                    (item) =>
+                        item.userId === userData.$id &&
+                        item.postId === $id
+                );
+
+                setReposted(alreadyReposted);
             } catch (error) {
                 console.error("Error fetching repost state:", error);
+            } finally {
+                if (!cancelled) {
+                    setRepostStateLoaded(true);
+                }
             }
         };
 
         loadRepostState();
+
+        return () => {
+            cancelled = true;
+        };
     }, [$id, userData?.$id]);
-    
+    /*
     const handleLikes = async ($id) => {
         const result = await appwritelike.getLikeUsers($id);
 
@@ -155,7 +212,65 @@ function PostCard({
             }
         }
     }
+    */
+    
+    const handleLikes = async (postId) => {
+        if (!userData?.$id || !likeStateLoaded || likePending) return;
 
+        const wasLiked = liked;
+        const previousCount = likesCount;
+        const shouldLike = !wasLiked;
+
+        await runLikeAction({
+            optimisticUpdate: () => {
+                setLiked(shouldLike);
+                setLikesCount(
+                    Math.max(
+                        0,
+                        previousCount + (shouldLike ? 1 : -1)
+                    )
+                );
+            },
+
+            action: async () => {
+                // Keep your existing Appwrite create/delete operations.
+                if (shouldLike) {
+                    const result = await appwritelike.createLike({
+                        postId,
+                        userId: userData.$id,
+                    });
+
+                    if (!result) {
+                        throw new Error("Could not create like");
+                    }
+
+                    return result;
+                }
+
+                const result = await appwritelike.deleteLike({
+                    postId,
+                    userId: userData.$id,
+                });
+
+                if (!result) {
+                    throw new Error("Could not delete like");
+                }
+
+                return result;
+            },
+
+            rollback: () => {
+                setLiked(wasLiked);
+                setLikesCount(previousCount);
+            },
+
+            onError: (error) => {
+                console.error("Like action failed:", error);
+            },
+        });
+    };
+
+/*
     const handleRepost = async () => {
         console.log("handleRepost function is calling.");
         const result = await appwriteRepost.getRepostsUsers(userData?.$id);
@@ -204,6 +319,112 @@ function PostCard({
             }
         }
     }
+    */
+    
+    
+    const handleRepost = async () => {
+        if (!userData?.$id || !repostStateLoaded || repostPending) {
+            return;
+        }
+
+        const wasReposted = reposted;
+        const previousCount = repostC;
+        const shouldRepost = !wasReposted;
+
+        await runRepostAction({
+            optimisticUpdate: () => {
+                setReposted(shouldRepost);
+                setRepostCount(
+                    Math.max(
+                        0,
+                        previousCount + (shouldRepost ? 1 : -1)
+                    )
+                );
+            },
+
+            action: async () => {
+                if (shouldRepost) {
+                    const created = await appwriteRepost.createRepost({
+                        userId: userData.$id,
+                        postId: $id,
+                        posterId: userid,
+                    });
+
+                    if (!created) {
+                        throw new Error("Failed to create repost");
+                    }
+
+                    const updatedPost =
+                        await appwriteService.incrementPostRepost($id);
+
+                    if (!updatedPost) {
+                        // The repost record exists, but the count update failed.
+                        // Attempt to undo the record creation.
+                        await appwriteRepost.deleteRepost({
+                            userId: userData.$id,
+                            postId: $id,
+                        });
+
+                        throw new Error("Failed to update repost count");
+                    }
+
+                    setReposts((prev) => [...prev, created]);
+                    return created;
+                }
+
+                const deleted = await appwriteRepost.deleteRepost({
+                    userId: userData.$id,
+                    postId: $id,
+                });
+
+                if (!deleted) {
+                    throw new Error("Failed to delete repost");
+                }
+
+                const updatedPost =
+                    await appwriteService.decrementPostRepost($id);
+
+                if (!updatedPost) {
+                    // Best-effort restoration if the count update fails.
+                    await appwriteRepost.createRepost({
+                        userId: userData.$id,
+                        postId: $id,
+                        posterId: userid,
+                    });
+
+                    throw new Error("Failed to update repost count");
+                }
+
+                setReposts((prev) =>
+                    prev.filter(
+                        (item) =>
+                            !(
+                                item.userId === userData.$id &&
+                                item.postId === $id
+                            )
+                    )
+                );
+
+                return deleted;
+            },
+
+            rollback: () => {
+                setReposted(wasReposted);
+                setRepostCount(previousCount);
+            },
+
+            onSuccess: () => {
+                if (!shouldRepost) {
+                    onUnrepost?.();
+                }
+            },
+
+            onError: (error) => {
+                console.error("Repost action failed:", error);
+            },
+        });
+    };
+
 
     const handleShare = async () => {
         console.log("share button is working.")
@@ -324,6 +545,7 @@ function PostCard({
                 <div className="flex flex-wrap items-center gap-2">
                         {/* Like */}
                         <button
+                            disabled={likePending}
                             onClick={(e) => {
                                 e.preventDefault()
                                 e.stopPropagation()
@@ -356,6 +578,7 @@ function PostCard({
                                 handleRepost()
                             console.log("function streeming.")}
                             }
+                            disabled={!repostStateLoaded || repostPending}
                             className={`${chip} hover:text-volt hover:border-volt/30 hover:bg-volt/10`}
                         >
                             <RepostIcon size={17}

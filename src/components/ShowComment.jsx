@@ -389,28 +389,30 @@ function ShowComment({comments}) {
                                         {replyCount[comment.$id] || 0}
                                     </span>
                                 </button>
+                                
                                 {/* Repost */}
-                                <button className={`${act} hover:text-volt hover:bg-volt/10`}>
+                                {/* <button className={`${act} hover:text-volt hover:bg-volt/10`}>
                                     <RepostIcon size={16} />
-                                </button>
+                                </button> */}
+                                
                                 {/* Views */}
-                                <button className={`${act} hover:text-white`}>
+                                {/* <button className={`${act} hover:text-white`}>
                                     <EyeIcon size={16} />
                                     <span>
                                         86
                                     </span>
-                                </button>
+                                </button> */}
 
                                 <div className="ml-auto flex items-center gap-1">
                                     {/* Bookmark */}
-                                    <button className={`${act} hover:text-white hover:bg-white/6`}>
+                                    {/* <button className={`${act} hover:text-white hover:bg-white/6`}>
                                         <BookmarkIcon size={16} />
-                                    </button>
+                                    </button> */}
 
                                     {/* Share */}
-                                    <button className={`${act} hover:text-volt hover:bg-volt/10`}>
+                                    {/* <button className={`${act} hover:text-volt hover:bg-volt/10`}>
                                         <ShareIcon size={16} />
-                                    </button>
+                                    </button> */}
                                 </div>
                             </div>
                             <ShowCommentReply commentId={comment.$id} refresh={replyRefresh[comment.$id] || 0} />
