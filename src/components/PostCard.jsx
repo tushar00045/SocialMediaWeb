@@ -1,5 +1,6 @@
 import React,{useState,useEffect,useRef} from "react";
 import appwriteService from "../appwrite/config";
+import DOMPurify from "dompurify";
 import { Link } from "react-router-dom";
 import userImage from "../assets/wolf69w-nature-10184389.jpg";
 import { useSelector } from "react-redux";
@@ -510,7 +511,7 @@ function PostCard({
                         <div
                             className="post-body clamp-4 text-zinc-300 leading-7"
                             dangerouslySetInnerHTML={{
-                                __html: content
+                                __html: DOMPurify.sanitize(content)
                             }}
                         />
                     )}

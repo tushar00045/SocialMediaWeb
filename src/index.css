@@ -92,6 +92,7 @@ body::before {
   margin: 0.5rem 0;
 }
 
+
 .post-body a {
   color: var(--color-volt);
   text-decoration: underline;
