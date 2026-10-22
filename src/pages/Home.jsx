@@ -6,6 +6,8 @@ import { useDispatch,useSelector } from 'react-redux';
 import { setPosts as setPostsInStore, setfeed, setExplore } from '../store/postSlice';
 
 function Home() {
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState("");
   const userData = useSelector((state) => state.auth.userData);
   const dispatch = useDispatch();
 
@@ -20,7 +22,7 @@ function Home() {
 
     return shuffled;
   }
-
+/*
   useEffect(() => {
       if (!userData?.$id) return;
 
@@ -57,10 +59,71 @@ function Home() {
 
       fetchPosts();
   }, [dispatch, userData?.$id]);
+*/
+  
+  useEffect(() => {
+      let cancelled = false;
+
+      const fetchPosts = async () => {
+          if (!userData?.$id) {
+              setLoading(false);
+              return;
+          }
+
+          setLoading(true);
+          setFetchError("");
+
+          try {
+              const result = await appwriteService.getPosts();
+
+              if (cancelled) return;
+
+              if (!result) {
+                  throw new Error("Failed to fetch posts");
+              }
+
+              const otherUsersPosts = result.documents.filter(
+                  (post) => post.userid !== userData.$id
+              );
+
+              dispatch(setPostsInStore(otherUsersPosts));
+
+              const shuffledPosts = shuffleArray(otherUsersPosts);
+              const mid = Math.ceil(shuffledPosts.length / 2);
+
+              const feedPosts = shuffledPosts.slice(0, mid);
+              const explorePosts = shuffledPosts.slice(mid);
+
+              const newestFirst = (a, b) =>
+                  new Date(b.$createdAt) - new Date(a.$createdAt);
+
+              feedPosts.sort(newestFirst);
+              explorePosts.sort(newestFirst);
+
+              dispatch(setfeed(feedPosts));
+              dispatch(setExplore(explorePosts));
+          } catch (error) {
+              if (!cancelled) {
+                  console.error("Failed to fetch posts:", error);
+                  setFetchError("Unable to load posts. Please try again.");
+              }
+          } finally {
+              if (!cancelled) {
+                  setLoading(false);
+              }
+          }
+      };
+
+      fetchPosts();
+
+      return () => {
+          cancelled = true;
+      };
+  }, [dispatch, userData?.$id]);
 
   const feed = useSelector((state) => state.post.feed);
   
-  if (feed.length == 0) {
+  if (!userData?.$id) {
     return (
       <div className="w-full py-10 sm:py-16">
         <Container>
@@ -91,6 +154,84 @@ function Home() {
       </div>
     )
   }
+
+  if (loading) {
+      return (
+          <div className="min-h-[60vh] flex flex-col items-center justify-center px-4">
+              <div className="surface w-full max-w-md rounded-3xl border border-white/10 p-10 text-center shadow-xl">
+                  <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-volt/10">
+                      <div className="h-8 w-8 animate-spin rounded-full border-4 border-white/10 border-t-volt" />
+                  </div>
+
+                  <h2 className="text-xl font-bold text-white">
+                      Your feed is loading
+                  </h2>
+
+                  <p className="mt-2 text-sm leading-6 text-zinc-400">
+                     Fetching the latest posts. Just a moment!
+                  </p>
+
+                  <div className="mt-6 h-1.5 overflow-hidden rounded-full bg-white/5">
+                      <div className="h-full w-1/2 animate-pulse rounded-full bg-volt" />
+                  </div>
+              </div>
+          </div>
+      );
+  }
+
+  if (feed.length === 0) {
+    return (
+      <Container>
+        <div className="flex min-h-[60vh] items-center justify-center px-4">
+          <div className="w-full max-w-lg rounded-2xl border border-zinc-200 bg-white px-6 py-12 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:px-10">
+            {/* Empty state illustration */}
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-950/50">
+              <svg
+                className="h-10 w-10 text-indigo-600 dark:text-indigo-400"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8 10h8M8 14h5m-8 6 3-3h9a3 3 0 0 0 3-3V6a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3v3Z"
+                />
+              </svg>
+            </div>
+
+            <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
+              Your feed is feeling quiet
+            </h2>
+
+            <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-zinc-500 dark:text-zinc-400">
+              There are no posts to show right now. Discover new people or
+              publish something of your own to get the conversation started.
+            </p>
+
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+              <button
+                onClick={() => navigate("/all-posts")}
+                className="rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-[0.98]"
+              >
+                Explore posts
+              </button>
+
+              <button
+                onClick={() => navigate("/add-post")}
+                className="rounded-xl border border-zinc-300 px-6 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 active:scale-[0.98] dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+              >
+                Create a post
+              </button>
+            </div>
+          </div>
+        </div>
+      </Container>
+    );
+  }
+
+
   return (
     <div className="w-full max-w-2xl mx-auto px-3 sm:px-0 py-6">
         <div className="mb-5 flex items-end justify-between px-1">

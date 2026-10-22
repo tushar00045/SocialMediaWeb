@@ -21,14 +21,39 @@ function Login() {
             const session = await authService.login(data)
             if (session) {
                 const userData = await authService.getCurrentUser()
-                if(userData) dispatch(authLogin(userData));
-                navigate("/")
+                if (userData) {
+                    dispatch(authLogin({userData}));
+                    navigate("/")
+                } 
             }
         } catch (error) {
             setError(error.message)
         }
     }
 
+    // const login = async (data) => {
+    // setError("");
+
+    // try {
+    //     const session = await authService.login(data);
+
+    //     if (!session) {
+    //     throw new Error("Login failed.");
+    //     }
+
+    //     const userData = await authService.getCurrentUser();
+
+    //     if (!userData?.$id) {
+    //     throw new Error("Unable to retrieve the logged-in user.");
+    //     }
+
+    //     dispatch(login({ userData }));
+    //     navigate("/", { replace: true });
+    // } catch (error) {
+    //     console.error("Login failed:", error);
+    //     setError(error.message || "Unable to log in.");
+    // }
+    // };
   return (
     <div className="flex items-center justify-center px-4 py-6">
         <div className="mx-auto grid w-full max-w-4xl overflow-hidden rounded-3xl surface md:grid-cols-2 shadow-[0_40px_120px_-40px_rgba(139,124,255,0.5)] animate-rise">
